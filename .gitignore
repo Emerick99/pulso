@@ -3,10 +3,11 @@
 Thumbs.db
 desktop.ini
 
-# Variables de entorno
+# Variables de entorno / config local
 .env
 .env.local
 .env.*.local
+*.local
 
 # Logs
 *.log
@@ -16,6 +17,8 @@ npm-debug.log*
 # Dependencias
 node_modules/
 vendor/
+
+# Python (si aplica)
 __pycache__/
 *.pyc
 *.pyo
@@ -23,14 +26,34 @@ __pycache__/
 # Build / compilación
 dist/
 build/
+bin/
 out/
 target/
+cmake-build-*/
+
+# Archivos objeto
 *.o
-*.exe
+*.obj
+
+# Librerías / binarios
 *.dll
 *.so
+*.a
+*.lib
 
-# IDEs
+# Ejecutables
+*.exe
+*.out
+*.app
+
+# CMake / C++
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+
+# IDEs / Editores
 .vscode/
 .idea/
 *.swp
@@ -45,3 +68,10 @@ htmlcov/
 *.pem
 *.key
 *.cert
+id_rsa
+id_rsa.pub
+
+# Temporales / backups
+*.tmp
+*.temp
+*.bak
