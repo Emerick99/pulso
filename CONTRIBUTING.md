@@ -51,24 +51,32 @@ Asegúrate de que te aparezca en **origin** tu nombre de usuario en el apartado 
 En caso de existir algún error revisar el apartado [Errores comunes](#errores-comunes).
 
 ### 4. Sincroniza antes de trabajar
+**Realiza** este paso **SIEMPRE ANTES** de empezar a trabajar en un nuevo Issue para tener tu repositorio al dia :D
 ```bash
+# Moverte a la rama dev
 git checkout dev
+# Trae los cambios del repositorio original a tu repositorio local
 git pull upstream dev
 ```
 
 ### 5. Crea tu rama de trabajo
+Recuerda trabajar con ramas. El nombre de la rama que debes utilizar para tu Issue esta siempre en la descripcion del mismo, ya sea en el apartado **"Rama sugerida"** o simplemente **"Rama"**.
+
+***tipo/descripcion-corta = el nombre de la Rama sugerida***
 ```bash
+# Crear y moverte a la rama que crearás
 git checkout -b tipo/descripcion-corta
 ```
 
 Ejemplos de nombres de rama:
-
+```
 feat/endpoint-metricas-cpu
 docs/readme-instalacion
 fix/calculo-ram-incorrecto
 test/pruebas-unitarias-cpu
 chore/configurar-github-actions
 security/analisis-dependencias
+```
 
 ### 6. Trabaja y haz commits pequeños
 ```bash
