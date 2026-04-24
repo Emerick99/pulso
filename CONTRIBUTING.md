@@ -90,7 +90,7 @@ El commit debe responder a la pregunta: *"¿Qué hace este cambio?"*
 git add .
 git commit -m "tipo: descripción corta en presente"
 ```
-Para saber de que *tipo* debes realizar el commit revisa el apartado de [convencion de commits](#convención-de-commits).
+Para saber de que *tipo* debes realizar el commit revisa el apartado de [convención de commits](#convención-de-commits).
 ### 7. Sube tu rama a tu fork
 ```bash
 git push origin tipo/descripcion-corta
