@@ -8,18 +8,47 @@ el **Forking Workflow**. Lee este documento antes de empezar.
 ## Flujo de trabajo
 
 ### 1. Haz fork del repositorio
-Botón **Fork** en la esquina superior derecha de GitHub.
+Botón **Fork** en la esquina superior derecha de GitHub.  
+
+Asegúrate que el **owner** sea tu cuenta de GithHub, luego click al botón de color verde: "**Create Fork**".
+Ahora deberías tener un repositorio en tu **cuenta personal** de GitHub llamado **tu_nombre_usuario/nombre_repositorio**. 
+
+*Ejemplo.-* **Atoxny/pulso**
 
 ### 2. Clona tu fork
+Desde el apartado **Code** del repositorio en tu cuenta personal realiza la clonación con los siguientes pasos:
+1.   Click al botón de color verde **"<> Code"**.
+2.   Selecciona Local -> HTTPS.
+3.   Copia la URL.
+4.   Desde tu computadora (portátil o de escritorio), en la carpeta donde quieres clonar el repositorio, abre la terminal de GitBash haciendo click derecho dentro la carpeta.
+5.   En la terminal de GitBash escribe los siguientes comandos:
+
 ```bash
+# Clonar el repositorio
+# Recuerda PEGAR la URL que copiaste en lugar del URL de ejemplo :D
 git clone https://github.com/TU-USUARIO/PROYECTO.git
+
+# Moverte dentro la carpeta donde se clonó el repositorio
 cd PROYECTO
 ```
 
-### 3. Agrega el repo original como upstream
+### 3. Agrega el repo original como upstream 
+Para estar al tanto de las modificaciones que se realicen en el **repositorio original (sis-inf/pulso)** debes agregar el repositorio original como un upstream de la siguiente manera en la terminal de GitBash, puedes **copiar** el siguiente comando:
 ```bash
-git remote add upstream https://github.com/sis-inf/PROYECTO.git
+git remote add upstream https://github.com/sis-inf/pulso.git
 ```
+Revisa si se agregó de manera exitosa el repositorio como upstream.
+```bash
+git remote -v
+# Deberia salirte como resultado, luego de ingresar ese comando, lo siguiente:
+origin https://github.com/TU-USUARIO/pulso.git (fetch)
+origin https://github.com/TU-USUARIO/pulso.git (push)
+upstream https://github.com/sis-inf/pulso.git (fetch)
+upstream https://github.com/sis-inf/puslo.git (push)
+```
+Asegúrate de que te aparezca en **origin** tu nombre de usuario en el apartado ***TU-USUARIO***, mientras que en **upstream** el nombre de ***sis-inf***. 
+
+En caso de existir algún error revisar el apartado [Errores comunes](#errores-comunes).
 
 ### 4. Sincroniza antes de trabajar
 ```bash
@@ -112,3 +141,5 @@ chore: configurar GitHub Actions para CI
 2. Comenta en el issue que quieres trabajarlo
 3. Espera confirmación antes de empezar
 4. Sigue los pasos de este documento
+
+## Errores comunes
