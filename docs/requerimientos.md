@@ -15,11 +15,19 @@ Un requerimiento funcional define las funciones específicas que un sistema debe
 | RF-007 | El sistema debe permitir definir umbrales personalizados para CPU, memoria y red. | Media | Pendiente
 | RF-008 | El sistema debe exportar reportes básicos de estado y métricas en formatos estándar (CSV o PDF). | Baja | Pendiente
 
-## Requerimientos No Funcionales
+## Requerimientos No Funcionales (RNF)
 
-| ID | Descripción | Categoría | Estado |
-|---|---|---|---|
-| RNF-001 | | Rendimiento | Pendiente |
+Los siguientes requerimientos definen las restricciones técnicas y de calidad bajo las cuales debe operar el agente **Pulso**.
+
+| ID | Categoría | Descripción | Prioridad |
+|:---:|---|---|:---:|
+| **RNF-001** | **Rendimiento** | El agente debe consumir menos de **10MB de memoria RAM** durante su ejecución continua. | Alta |
+| **RNF-002** | **Rendimiento** | El tiempo de respuesta para la captura de métricas de sistema debe ser inferior a **100ms**. | Alta |
+| **RNF-003** | **Compatibilidad** | El agente debe ser binario único y compatible con sistemas operativos **Linux (Kernel 5.4+) y Windows 10/11**. | Alta |
+| **RNF-004** | **Disponibilidad** | El agente debe ser capaz de reintentar la conexión automáticamente en caso de pérdida de red (Resiliencia). | Media |
+| **RNF-005** | **Disponibilidad** | El sistema debe garantizar un tiempo de actividad (Uptime) del 99.9% para no perder métricas críticas. | Media |
+| **RNF-006** | **Seguridad** | Los datos transmitidos entre el agente y el servidor deben estar cifrados mediante TLS 1.2 o superior. | Media |
+| **RNF-007** | **Escalabilidad** | El agente debe poder ejecutarse en arquitecturas de procesador x86_64 y ARM64. | Baja |
 
 ## Requerimientos de Sistema
 
