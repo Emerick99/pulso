@@ -8,6 +8,9 @@
 #include <filesystem>
 #include <format>      // C++23; usa fmt:: o snprintf si el compilador es C++17
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
 
 namespace pulso::config {
 
@@ -67,6 +70,9 @@ Config mapear(const toml::table& doc)
     // nivel_log (clave raíz)
     cfg.nivel_log = leer<std::string>(doc, "nivel_log", cfg.nivel_log);
 
+    // output_format (clave raíz)
+    cfg.output_format = leer<std::string>(doc, "output_format", cfg.output_format);
+
     return cfg;
 }
 
@@ -78,24 +84,71 @@ Config mapear(const toml::table& doc)
 
 Config cargar(const std::string& ruta)
 {
-    // 1. Verificar existencia antes de intentar parsear para un mensaje claro.
+    // Si el archivo no existe:
+    // usar valores por defecto sin excepción
     if (!std::filesystem::exists(ruta)) {
-        throw ErrorConfig(
-            std::format("El archivo de configuración no existe: '{}'", ruta));
+        return porDefecto();
     }
 
-    // 2. Parsear; toml++ lanza toml::parse_error si la sintaxis es inválida.
     try {
-        const toml::table doc = toml::parse_file(ruta);
-        return mapear(doc);
+        toml::table doc = toml::parse_file(ruta);
+
+        Config cfg = mapear(doc);
+
+        // Validar nivel_log
+        if (cfg.nivel_log != "debug" &&
+            cfg.nivel_log != "info" &&
+            cfg.nivel_log != "warn" &&
+            cfg.nivel_log != "error") {
+
+            throw std::invalid_argument(
+                "Valor inválido para nivel_log: " + cfg.nivel_log
+            );
+        }
+
+        // Validar output_format
+        if (cfg.output_format != "json" &&
+            cfg.output_format != "csv" &&
+            cfg.output_format != "prometheus") {
+
+            throw std::invalid_argument(
+                "Valor inválido para output_format: " + cfg.output_format
+            );
+        }
+
+        // Validar puerto
+        if (cfg.servidor.puerto <= 0) {
+            throw std::invalid_argument(
+                "Valor inválido para puerto"
+            );
+        }
+
+        // Validar intervalo
+        if (cfg.sampler.intervalo_segundos <= 0) {
+            throw std::invalid_argument(
+                "Valor inválido para intervalo_segundos"
+            );
+        }
+
+        return cfg;
+
     }
     catch (const toml::parse_error& e) {
+
         throw ErrorConfig(
-            std::format("Error al parsear '{}': {} (línea {}, columna {})",
-                        ruta,
-                        std::string_view{e.description()},
-                        e.source().begin.line,
-                        e.source().begin.column));
+            "Error parseando '" + ruta + "': " +
+            std::string(e.description())
+        );
+
+    }
+    catch (const std::invalid_argument&) {
+
+        throw;
+
+    }
+    catch (const std::exception& e) {
+
+        throw ErrorConfig(e.what());
     }
 }
 

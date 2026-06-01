@@ -55,6 +55,9 @@ struct Config {
     ConfigSampler  sampler;
     ConfigStorage  storage;
     std::string    nivel_log = "info";
+    /// Formato de salida de métricas.
+    /// Valores válidos: json, csv, prometheus
+    std::string    output_format = "json";
 };
 
 // ---------------------------------------------------------------------------
