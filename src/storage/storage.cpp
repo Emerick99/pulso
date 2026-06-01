@@ -1,5 +1,7 @@
 #include "storage.hpp"
 #include "schema.hpp"
+#include <fstream>
+#include <stdexcept>
  
 namespace pulso::storage {
  
@@ -11,6 +13,59 @@ Storage::Storage(const std::string& dbPath)
  
     // Inicializar esquema (idempotente)
     pulso::storage::inicializarEsquema(db_);
+}
+
+void Storage::exportToCSV(const std::string& ruta_archivo) const {
+    std::ofstream archivo(ruta_archivo);
+
+    if (!archivo.is_open()) {
+        throw std::runtime_error(
+            "No se pudo crear el archivo CSV: " + ruta_archivo
+        );
+    }
+
+    // Cabecera CSV
+    archivo
+        << "timestamp,"
+        << "cpu_usage,"
+        << "cpu_cores,"
+        << "memory_total,"
+        << "memory_used,"
+        << "memory_available,"
+        << "disk_total,"
+        << "disk_used,"
+        << "disk_free,"
+        << "network_rx_bytes,"
+        << "network_tx_bytes"
+        << '\n';
+
+    SQLite::Statement query(
+        db_,
+        "SELECT "
+        "timestamp, "
+        "cpu_usage, cpu_cores, "
+        "memory_total, memory_used, memory_available, "
+        "disk_total, disk_used, disk_free, "
+        "network_rx_bytes, network_tx_bytes "
+        "FROM snapshots "
+        "ORDER BY timestamp ASC;"
+    );
+
+    while (query.executeStep()) {
+        archivo
+            << query.getColumn(0).getInt64() << ","
+            << query.getColumn(1).getDouble() << ","
+            << query.getColumn(2).getInt() << ","
+            << query.getColumn(3).getInt64() << ","
+            << query.getColumn(4).getInt64() << ","
+            << query.getColumn(5).getInt64() << ","
+            << query.getColumn(6).getInt64() << ","
+            << query.getColumn(7).getInt64() << ","
+            << query.getColumn(8).getInt64() << ","
+            << query.getColumn(9).getInt64() << ","
+            << query.getColumn(10).getInt64()
+            << '\n';
+    }
 }
  
 void Storage::save(const pulso::core::Snapshot& snapshot) {

@@ -58,6 +58,7 @@ public:
      * @return Cantidad total de snapshots.
      */
     std::size_t total() const;
+    void exportToCSV(const std::string& ruta_archivo) const;
  
 private:
     SQLite::Database db_;
