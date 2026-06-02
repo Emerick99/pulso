@@ -75,3 +75,7 @@ id_rsa.pub
 *.tmp
 *.temp
 *.bak
+# Agregados por requerimiento de Issue #228
+.cmake/
+*.db
+*.sqlite

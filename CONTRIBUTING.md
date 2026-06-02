@@ -104,7 +104,7 @@ git push origin tipo/descripcion-corta
    En caso de que no aparezca: 
      * Dirígete a la pestaña `Pull Requests`-> `New Pull Request`
 3. Verifica el  destino del PR
-   - Base repository: `sis-inf/pulso` → base `dev`
+   - Base repository: `sis-inf/pulso` → base `dev` <- Importante que este en `dev`
    - Head repository: `TU-USUARIO/pulso` → compare `tu-rama`
 4. Edita la descripción y el título del PR según los cambios que hayas realizado sin olvidarte de agregar al `Closes #` el numero del Issue que realizaste.
 ---
@@ -120,15 +120,14 @@ git push origin tipo/descripcion-corta
 | `chore:` | Configuración o CI/CD |
 | `refactor:` | Mejora sin cambiar comportamiento |
 | `security:` | Mejora de seguridad |
-| `data:` | Análisis de datos |
 
 ### Ejemplos
 
-feat: agregar endpoint /metrics para CPU
-fix: corregir cálculo de porcentaje de RAM
-docs: agregar guía de instalación en Windows
-test: agregar pruebas unitarias para módulo de disco
-chore: configurar GitHub Actions para CI
+- feat: agregar endpoint /metrics para CPU
+- fix: corregir cálculo de porcentaje de RAM
+- docs: agregar guía de instalación en Windows
+- test: agregar pruebas unitarias para módulo de disco
+- chore: configurar GitHub Actions para CI
 
 ---
 
@@ -136,7 +135,9 @@ chore: configurar GitHub Actions para CI
 
 - ❌ Nunca hagas push directo a `main` o `dev`
 - ❌ Nunca trabajes directamente en `main` o `dev`
+- ❌ No agregar archivos de otros lenguajes que no pertenezcan al proyecto C++
 - ✅ Un issue = una rama = un PR
+- ✅ Todo PR debe ser abierto contra la rama `dev` y NO contra `main`
 - ✅ Todo PR debe referenciar su issue con `Closes #N`
 - ✅ El PR debe pasar el CI antes de ser mergeado
 - ✅ Todo PR necesita al menos una revisión

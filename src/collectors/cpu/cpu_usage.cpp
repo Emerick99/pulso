@@ -1,40 +1,35 @@
-#include "cpu_usage.h"
+##include "cpu_usage.hpp"
+#include "../../collectors/error_recoleccion.hpp"
 #include <fstream>
 #include <sstream>
 #include <thread>
 #include <chrono>
+#include <ctime>
 
 /// @brief Lee y parsea los contadores de CPU desde /proc/stat.
 /// @param ruta Ruta al archivo de estadísticas.
-/// @return ContadoresCPU con los valores leídos o en cero si falla.
+/// @return ContadoresCPU con los valores leídos.
+/// @throws pulso::collectors::ErrorRecoleccion si el archivo no es accesible.
 ContadoresCPU LeerEstadisticasCPU(const std::string& ruta) {
-  // Inicializar contadores en cero
   ContadoresCPU contadores{};
-
+  std::ifstream archivo(ruta);
+  if (!archivo.is_open()) {
+    throw pulso::collectors::ErrorRecoleccion(
+        "No se puede acceder a " + ruta
+    );
+  }
+  archivo.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   try {
-    // Abrir archivo
-    std::ifstream archivo(ruta);
-
-    // Activar excepciones si ocurre error en la lectura
-    archivo.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-
-    // Leer la primera línea (contadores globales de CPU)
     std::string linea;
     std::getline(archivo, linea);
-
-    // Crear flujo para parsear la línea
     std::istringstream flujo(linea);
     std::string etiqueta;
-
-    // Leer etiqueta inicial (debe ser "cpu")
     flujo >> etiqueta;
-
-    // Validar que se trata de la línea global de CPU
     if (etiqueta != "cpu") {
-      return contadores;
+      throw pulso::collectors::ErrorRecoleccion(
+          "Formato inesperado en " + ruta
+      );
     }
-
-    // Extraer los valores en orden
     flujo >> contadores.usuario
           >> contadores.nice
           >> contadores.sistema
@@ -43,12 +38,13 @@ ContadoresCPU LeerEstadisticasCPU(const std::string& ruta) {
           >> contadores.irq
           >> contadores.softirq
           >> contadores.robado;
-
+  } catch (const pulso::collectors::ErrorRecoleccion&) {
+    throw;
   } catch (...) {
-    // En caso de error, devolver estructura en cero
-    return ContadoresCPU{};
+    throw pulso::collectors::ErrorRecoleccion(
+        "Error al leer " + ruta
+    );
   }
-
   return contadores;
 }
 
@@ -68,7 +64,7 @@ uint64_t CalcularTicksOciosos(const ContadoresCPU& c) {
 }
 
 /// @brief Calcula el uso de CPU en porcentaje.
-/// Se basa en dos lecturas de /proc/stat separadas por 1 segundo.
+/// Se basa en dos lecturas de /proc/stat separadas por 100 milisegundos.
 /// @return Valor entre 0.0 y 100.0 que representa el uso de CPU.
 double ObtenerUsoCPU() {
   // Primera lectura
@@ -76,34 +72,75 @@ double ObtenerUsoCPU() {
   uint64_t total1 = CalcularTicksTotales(lectura1);
   uint64_t ocioso1 = CalcularTicksOciosos(lectura1);
 
-  // Esperar 1 segundo (requerido para calcular diferencia)
-  std::this_thread::sleep_for(std::chrono::seconds(1));
+  // Esperar 100 milisegundos
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
   // Segunda lectura
   ContadoresCPU lectura2 = LeerEstadisticasCPU();
   uint64_t total2 = CalcularTicksTotales(lectura2);
   uint64_t ocioso2 = CalcularTicksOciosos(lectura2);
 
-  // Validar posibles inconsistencias (reinicio o lecturas inválidas)
+  // Validar posibles inconsistencias
   if (total2 <= total1 || ocioso2 < ocioso1) {
     return 0.0;
   }
 
-  // Calcular diferencias entre lecturas
-  uint64_t delta_total = total2 - total1;
+  uint64_t delta_total  = total2 - total1;
   uint64_t delta_ocioso = ocioso2 - ocioso1;
 
-  // Evitar división por cero
   if (delta_total == 0) {
     return 0.0;
   }
 
-  // Aplicar fórmula de uso de CPU
   double uso = (double)(delta_total - delta_ocioso) / delta_total * 100.0;
 
-  // Limitar el resultado al rango 0 - 100
-  if (uso < 0.0) uso = 0.0;
+  if (uso < 0.0)   uso = 0.0;
   if (uso > 100.0) uso = 100.0;
 
   return uso;
 }
+
+/// @brief Obtiene el número de núcleos de CPU del sistema.
+/// @return Número de núcleos lógicos disponibles.
+static int ObtenerNucleosCPU() {
+  int nucleos = 0;
+  std::ifstream archivo("/proc/stat");
+  if (!archivo.is_open()) {
+    return 0;
+  }
+  std::string linea;
+  while (std::getline(archivo, linea)) {
+    if (linea.rfind("cpu", 0) == 0 && linea.size() > 3 &&
+        std::isdigit(linea[3])) {
+      nucleos++;
+    }
+  }
+  return nucleos;
+}
+
+// Implementación de CollectorCPU
+namespace pulso::collectors {
+
+std::string CollectorCPU::nombre() const {
+  return "cpu";
+}
+
+std::vector<pulso::core::Metrica> CollectorCPU::recolectar() {
+  std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+  pulso::core::Metrica uso;
+  uso.name      = "cpu.usage";
+  uso.value     = ObtenerUsoCPU();
+  uso.unit      = "porcentaje";
+  uso.timestamp = ahora;
+
+  pulso::core::Metrica nucleos;
+  nucleos.name      = "cpu.cores";
+  nucleos.value     = static_cast<double>(ObtenerNucleosCPU());
+  nucleos.unit      = "nucleos";
+  nucleos.timestamp = ahora;
+
+  return { uso, nucleos };
+}
+
+}  // namespace pulso::collectors

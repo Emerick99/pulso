@@ -1,8 +1,10 @@
-#ifndef CPU_USAGE_H
-#define CPU_USAGE_H
+#ifndef PULSO_CPU_CPU_USAGE_HPP
+#define PULSO_CPU_CPU_USAGE_HPP
 
 #include <cstdint>
 #include <string>
+#include <vector>
+#include "../../collectors/icollector.hpp"
 
 /// @brief Estructura que representa los contadores de tiempo de CPU
 /// obtenidos desde la primera línea de /proc/stat.
@@ -39,5 +41,33 @@ uint64_t CalcularTicksOciosos(const ContadoresCPU& c);
 /// @return Porcentaje de uso de CPU.
 /// @note Si ocurre un error o los datos no son válidos, retorna 0.0.
 double ObtenerUsoCPU();
-
-#endif // CPU_USAGE_H
+namespace pulso::collectors {
+ 
+/**
+ * @brief Recolector de métricas de CPU.
+ *
+ * Implementa la interfaz ICollector para ser compatible con el sistema
+ * de colección del proyecto. Obtiene el porcentaje de uso de CPU
+ * leyendo /proc/stat mediante la lógica ya existente en ObtenerUsoCPU().
+ */
+class CollectorCPU : public ICollector {
+ public:
+  /**
+   * @brief Devuelve el nombre identificador de este collector.
+   * @return La cadena "cpu".
+   */
+  std::string nombre() const override;
+ 
+  /**
+   * @brief Ejecuta una medición de CPU y devuelve las métricas obtenidas.
+   *
+   * Invoca ObtenerUsoCPU() para leer /proc/stat y calcula el porcentaje
+   * de uso. Devuelve una métrica con nombre "cpu.usage" y unidad "porcentaje".
+   *
+   * @return Vector con la métrica de uso de CPU.
+   */
+  std::vector<pulso::core::Metrica> recolectar() override;
+};
+ 
+}  // namespace pulso::collectors
+#endif // PULSO_CPU_CPU_USAGE_HPP

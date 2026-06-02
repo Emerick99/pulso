@@ -1,44 +1,68 @@
 # Plan de Pruebas
 
-## 1. Objetivo
+## \## 1. Objetivo
 
-## 2. Alcance
-### En alcance
--
-### Fuera de alcance
--
+## Verificar que el sistema funcione correctamente, asegurando que los módulos de monitoreo y almacenamiento trabajen sin errores.
 
-## 3. Tipos de prueba
-- [ ] Unitarias
-- [ ] Integración
-- [ ] Funcionales manuales
-- [ ] Rendimiento
-- [ ] Seguridad
-- [ ] Regresión
+## \## 2. Alcance
 
-## 4. Entornos
+## \* \*\*En alcance\*\*: Módulo de base de datos SQLite, proceso de empaquetado `npm pack` y documentación técnica.
 
-| Entorno | SO | Versión |
-|---|---|---|
-| Local | | |
-| CI | Ubuntu latest | |
+## \* \*\*Fuera de alcance\*\*: Interfaz gráfica de usuario y despliegue en servidores externos.
 
-## 5. Responsables
+## \## 3. Tipos de prueba
 
-| Rol | Responsable |
-|---|---|
-| Diseño de casos | |
-| Ejecución manual | |
-| Automatización | |
-| Reporte | |
+## \* \[x] \*\*Unitarias\*\*: Para verificar las funciones de la base de datos.
 
-## 6. Criterios de salida
-- [ ] Cobertura mínima de ___%
-- [ ] Cero bugs críticos abiertos
-- [ ] Todos los casos ejecutados
+## \* \[x] \*\*Integración\*\*: Para asegurar que el almacenamiento guarda bien las capturas.
 
-## 7. Riesgos
+## \* \[x] \*\*Funcionales\*\*: Para validar que el paquete final no incluya archivos basura.
 
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|---|---|---|---|
-| | | | |
+## \## 4. Entornos
+
+## 
+
+## | Entorno | SO | Versión |C
+
+## | :--- | :--- | :--- |
+
+## | Local | Windows 11 | Node.js v20+ |
+
+## | CI | Ubuntu latest | GitHub Actions |
+
+## 
+
+## \## 5. Responsables
+
+## 
+
+## | Rol | Responsable |
+
+## | :--- | :--- |
+
+## | Diseño de casos | Carlos Gustavo Choquecallata |
+
+## | Ejecución manual | Carlos Gustavo Choquecallata |
+
+## | Automatización | GitHub Actions |
+
+## 
+
+## \## 6. Criterios de salida
+
+## \* \[x] Cobertura mínima de los módulos principales.
+
+## \* \[x] Cero bugs críticos abiertos en la persistencia de datos.
+
+## \* \[x] Todos los casos de prueba ejecutados satisfactoriamente.
+
+## \## 7. Riesgos
+
+## 
+
+## | Riesgo | Probabilidad | Impacto | Mitigación |
+
+## | :--- | :--- | :--- | :--- |
+
+## | Corrupción de base de datos | Baja | Alto | Usar scripts de inicialización limpios |
+

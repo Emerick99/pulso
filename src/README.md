@@ -1,120 +1,62 @@
 # 📁 Estructura de la carpeta src
 
-```bash
 src/
-├── core/
-├── monitor/
 ├── collectors/
-├── platform/
+│   ├── cpu/
+│   │   ├── cpu_usage.cpp
+│   │   └── cpu_usage.h
+│   ├── memory/
+│   ├── disk/
+│   └── network/
+├── core/
 ├── config/
-├── logging/
-└── utils/
-```
+├── alertas/
+├── platform/
+│   ├── linux/
+│   └── windows/
+├── utils/
+│   └── logging/
+├── main.cpp
+└── CMakeLists.txt
 
 ---
 
-## 📂 Descripción de Directorios
+## 📂 Descripción de Directorios y Archivos Fuente
 
-### 🧠 `core/`
+### 📡 collectors/
+Módulos dedicados a la recolección de métricas del sistema. Las subcarpetas representan los diferentes componentes de hardware listos para ser implementados o en desarrollo:
 
-Contiene el núcleo del sistema.
+* cpu/: Contiene la lógica activa de recolección de métricas del procesador.
+  * cpu_usage.cpp / cpu_usage.h: Implementación y cabecera encargadas de calcular el porcentaje de uso de la CPU.
+* memory/: Directorio base para la recolección de métricas de memoria.
+  * ram_usage.cpp: Archivo fuente destinado al cálculo del uso de la memoria RAM.
+* disk/: Directorio base para métricas de almacenamiento.
+* network/: Directorio base para métricas de red.
 
-Responsabilidades:
+### 🧠 core/
+Directorio base destinado a albergar el núcleo del sistema y el flujo principal de ejecución del monitor.
+* schema.cpp: Archivo fuente ubicado en los módulos base del sistema encargado de definir la estructura o esquema de los datos recolectados.
+* types.hpp: Definiciones de tipos de datos globales y estructuras comunes utilizadas en todo el proyecto.
 
-* Planificación de tareas (scheduler)
-* Manejo de hilos (threads)
-* Flujo principal de ejecución
+### 🖥️ platform/
+Espacio reservado para aislar las implementaciones de código dependientes del sistema operativo subyacente.
+* linux/: Directorio para llamadas al sistema específicas de distribuciones Linux.
+* windows/: Directorio para APIs específicas de entornos Windows.
 
----
+### ⚙️ config/
+Directorio base reservado para los componentes que gestionarán la configuración del sistema en tiempo de ejecución.
 
-### 📊 `monitor/`
+### 🚨 alertas/
+Directorio base reservado para el futuro módulo encargado de evaluar métricas y disparar notificaciones o alertas del sistema.
 
-Lógica de monitoreo a alto nivel.
-
-Responsabilidades:
-
-* Definir qué se monitorea
-* Coordinar los *collectors*
-* Gestionar los ciclos de monitoreo
-
----
-
-### 📡 `collectors/`
-
-Módulos encargados de recolectar métricas.
-
-Cada subcarpeta representa un tipo de recurso:
-
-Ejemplos:
-
-* CPU
-* Memoria
-* Disco
-* Red
-
-Este diseño permite agregar nuevos *collectors* fácilmente sin afectar el resto del sistema.
-
----
-
-### 🖥️ `platform/`
-
-Implementaciones específicas del sistema operativo.
-
-Se utiliza para aislar código dependiente de la plataforma:
-
-Ejemplo:
-
-```bash
-platform/
-├── linux/
-└── windows/
-```
-
-Responsabilidades:
-
-* Llamadas al sistema
-* Acceso a métricas del hardware
-* Diferencias entre sistemas operativos
-
----
-
-### ⚙️ `config/`
-
-Gestión de configuración del sistema.
-
-Responsabilidades:
-
-* Lectura de archivos de configuración (JSON, YAML, variables de entorno)
-* Proveer parámetros en tiempo de ejecución
-
----
-
-### 🪵 `logging/`
-
-Sistema de registro (logs).
-
-Responsabilidades:
-
-* Registro en consola y/o archivo
-* Manejo de niveles de log (INFO, WARN, ERROR)
-
----
-
-### 🧰 `utils/`
-
-Funciones utilitarias reutilizables.
-
-Ejemplos:
-
-* Manejo de tiempo
-* Manipulación de strings
-* Operaciones con archivos
+### 🧰 utils/
+Contiene funciones utilitarias y herramientas de soporte reutilizables para el proyecto.
+* logging/: Subsistema de registro diseñado para el control y salida de mensajes del sistema (logs).
 
 ---
 
 ## 🧩 Principios de Diseño
 
-* **Modularidad**: Cada componente tiene una única responsabilidad
-* **Extensibilidad**: Se pueden agregar nuevos *collectors* sin modificar el núcleo
-* **Portabilidad**: El código dependiente del sistema está aislado
-* **Simplicidad**: Diseño ligero y fácil de entender
+* Modularidad: Cada componente tiene una única responsabilidad delimitada.
+* Extensibilidad: Estructura de directorios preparada para la adición de nuevos recolectores de métricas.
+* Portabilidad: Aislamiento planificado para el código dependiente de plataformas específicas.

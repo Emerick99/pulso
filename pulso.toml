@@ -1,0 +1,24 @@
+# Archivo de configuración del agente pulso
+# Todas las opciones tienen valores por defecto; este archivo muestra los valores
+# explícitos para fines de documentación.
+
+[servidor]
+# Dirección IP en la que escucha el servidor HTTP.
+# 0.0.0.0 acepta conexiones desde cualquier interfaz.
+host = "0.0.0.0"
+
+# Puerto del servidor HTTP.
+puerto = 8080
+
+[sampler]
+# Intervalo entre muestreos consecutivos, en segundos.
+# Valores recomendados: entre 5 y 60.
+intervalo_segundos = 10
+
+[storage]
+# Ruta del archivo de base de datos SQLite.
+# Puede ser relativa al directorio de ejecución o absoluta.
+ruta_db = "pulso.db"
+
+# Nivel de log: debug, info, warn, error
+nivel_log = "info"
