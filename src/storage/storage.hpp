@@ -9,7 +9,6 @@
 #include "../core/types.hpp"
  
 namespace pulso::storage {
- 
 /**
  * @brief Encapsula todas las operaciones de persistencia contra la base de datos SQLite.
  *
