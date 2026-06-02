@@ -2,7 +2,7 @@
 
 #include <sstream>
 #include <iomanip>
-#include <cmath>
+#include <ctime>
 
 namespace pulso::formatters {
 
@@ -12,6 +12,26 @@ std::string FormatterText::formato() const {
 
 std::string FormatterText::contentType() const {
     return "text/plain";
+}
+
+// Convierte timestamp Unix (segundos) a string ISO 8601
+static std::string formatearTimestamp(std::int64_t ts) {
+    std::time_t tiempo = static_cast<std::time_t>(ts);
+    std::tm* tm = std::gmtime(&tiempo);
+    
+    std::ostringstream oss;
+    oss << std::put_time(tm, "%Y-%m-%dT%H:%M:%SZ");
+    return oss.str();
+}
+
+// Convierte bytes a GB con 1 decimal
+static double bytesAGB(double bytes) {
+    return bytes / (1024.0 * 1024.0 * 1024.0);
+}
+
+// Convierte bytes a KB/s con 1 decimal
+static double bytesAKBs(double bytes) {
+    return bytes / 1024.0;
 }
 
 std::string FormatterText::formatear(
@@ -26,27 +46,27 @@ std::string FormatterText::formatear(
     double net_rx_kbs = 0.0;
     double net_tx_kbs = 0.0;
 
-    for (const auto& metrica : snapshot.metrics) {
-        if (metrica.name == "cpu" || metrica.name == "cpu_usage") {
-            cpu_pct = metrica.value;
-        } else if (metrica.name == "ram_used" || metrica.name == "memory_used") {
-            ram_usado_gb = metrica.value;
-        } else if (metrica.name == "ram_total" || metrica.name == "memory_total") {
-            ram_total_gb = metrica.value;
-        } else if (metrica.name == "disk_used") {
-            disco_usado_gb = metrica.value;
-        } else if (metrica.name == "disk_total") {
-            disco_total_gb = metrica.value;
-        } else if (metrica.name == "network_rx" || metrica.name == "net_rx") {
-            net_rx_kbs = metrica.value;
-        } else if (metrica.name == "network_tx" || metrica.name == "net_tx") {
-            net_tx_kbs = metrica.value;
+    for (const auto& metrica : snapshot.metricas) {
+        if (metrica.nombre == "cpu.usage" || metrica.nombre == "cpu") {
+            cpu_pct = metrica.valor;
+        } else if (metrica.nombre == "ram.used" || metrica.nombre == "ram.usado") {
+            ram_usado_gb = bytesAGB(metrica.valor);
+        } else if (metrica.nombre == "ram.total" || metrica.nombre == "ram.total") {
+            ram_total_gb = bytesAGB(metrica.valor);
+        } else if (metrica.nombre == "disk.used" || metrica.nombre == "disco.usado") {
+            disco_usado_gb = bytesAGB(metrica.valor);
+        } else if (metrica.nombre == "disk.total" || metrica.nombre == "disco.total") {
+            disco_total_gb = bytesAGB(metrica.valor);
+        } else if (metrica.nombre == "network.rx" || metrica.nombre == "net.rx") {
+            net_rx_kbs = bytesAKBs(metrica.valor);
+        } else if (metrica.nombre == "network.tx" || metrica.nombre == "net.tx") {
+            net_tx_kbs = bytesAKBs(metrica.valor);
         }
     }
 
     // Formatear línea: timestamp | CPU: 45.3% | RAM: 2.1/8.0 GB | Disco: 120/500 GB | Red: 1.2/0.8 KB/s
     std::ostringstream oss;
-    oss << snapshot.timestamp
+    oss << formatearTimestamp(snapshot.timestamp)
         << " | CPU: " << std::fixed << std::setprecision(1) << cpu_pct << "%"
         << " | RAM: " << ram_usado_gb << "/" << ram_total_gb << " GB"
         << " | Disco: " << disco_usado_gb << "/" << disco_total_gb << " GB"
