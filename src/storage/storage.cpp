@@ -1,16 +1,18 @@
 #include "storage.hpp"
 #include "schema.hpp"
+#include <ctime>
+#include <map>
 #include <fstream>
 #include <stdexcept>
- 
+
 namespace pulso::storage {
- 
+
 Storage::Storage(const std::string& dbPath)
     : db_(dbPath, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE)
 {
     // Activar modo WAL para mejorar rendimiento en escrituras concurrentes
     db_.exec("PRAGMA journal_mode=WAL;");
- 
+
     // Inicializar esquema (idempotente)
     pulso::storage::inicializarEsquema(db_);
 }
@@ -67,7 +69,7 @@ void Storage::exportToCSV(const std::string& ruta_archivo) const {
             << '\n';
     }
 }
- 
+
 void Storage::save(const pulso::core::Snapshot& snapshot) {
     // Extraer métricas del snapshot por nombre
     auto getMetricValue = [&](const std::string& name) -> double {
@@ -76,14 +78,14 @@ void Storage::save(const pulso::core::Snapshot& snapshot) {
         }
         return 0.0;
     };
- 
+
     SQLite::Statement query(db_,
         "INSERT INTO snapshots "
         "(timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
         " disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
     );
- 
+
     query.bind(1,  snapshot.timestamp);
     query.bind(2,  getMetricValue("cpu.usage"));
     query.bind(3,  static_cast<int>(getMetricValue("cpu.cores")));
@@ -95,15 +97,15 @@ void Storage::save(const pulso::core::Snapshot& snapshot) {
     query.bind(9,  static_cast<int64_t>(getMetricValue("disk.free")));
     query.bind(10, static_cast<int64_t>(getMetricValue("network.rx_bytes")));
     query.bind(11, static_cast<int64_t>(getMetricValue("network.tx_bytes")));
- 
+
     query.exec();
 }
- 
+
 // Convierte una fila de la query en un Snapshot
 static pulso::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
     pulso::core::Snapshot snapshot;
     snapshot.timestamp = query.getColumn(0).getInt64();
- 
+
     // Mapeo de columnas a métricas
     auto addMetric = [&](const std::string& name, const std::string& unit, double value) {
         pulso::core::Metrica m;
@@ -113,7 +115,7 @@ static pulso::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
         m.timestamp = snapshot.timestamp;
         snapshot.metrics.push_back(m);
     };
- 
+
     addMetric("cpu.usage",          "percent",  query.getColumn(1).getDouble());
     addMetric("cpu.cores",          "cores",    query.getColumn(2).getInt());
     addMetric("memory.total",       "bytes",    query.getColumn(3).getInt64());
@@ -124,24 +126,24 @@ static pulso::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
     addMetric("disk.free",          "bytes",    query.getColumn(8).getInt64());
     addMetric("network.rx_bytes",   "bytes",    query.getColumn(9).getInt64());
     addMetric("network.tx_bytes",   "bytes",    query.getColumn(10).getInt64());
- 
+
     return snapshot;
 }
- 
+
 std::optional<pulso::core::Snapshot> Storage::last() const {
     SQLite::Statement query(db_,
         "SELECT timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
         "disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes "
         "FROM snapshots ORDER BY timestamp DESC LIMIT 1;"
     );
- 
+
     if (!query.executeStep()) {
         return std::nullopt;
     }
- 
+
     return rowToSnapshot(query);
 }
- 
+
 std::vector<pulso::core::Snapshot> Storage::history(
     std::int64_t from,
     std::int64_t until,
@@ -151,35 +153,88 @@ std::vector<pulso::core::Snapshot> Storage::history(
         "SELECT timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
         "disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes "
         "FROM snapshots WHERE timestamp >= ?";
- 
+
     if (until != 0) {
         sql += " AND timestamp <= ?";
     }
- 
+
     sql += " ORDER BY timestamp ASC LIMIT ?;";
- 
+
     SQLite::Statement query(db_, sql);
- 
+
     int bindIndex = 1;
     query.bind(bindIndex++, from);
     if (until != 0) {
         query.bind(bindIndex++, until);
     }
     query.bind(bindIndex, static_cast<int64_t>(limit));
- 
+
     std::vector<pulso::core::Snapshot> results;
     while (query.executeStep()) {
         results.push_back(rowToSnapshot(query));
     }
- 
+
     return results;
 }
- 
+
 std::size_t Storage::total() const {
     SQLite::Statement query(db_, "SELECT COUNT(*) FROM snapshots;");
     query.executeStep();
     return static_cast<std::size_t>(query.getColumn(0).getInt64());
 }
- 
+
+pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
+    // Calcular el timestamp de inicio de la ventana
+    std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
+    std::int64_t desde = ahora - static_cast<std::int64_t>(ventana_segundos);
+
+    // Obtener snapshots dentro de la ventana
+    auto snapshots = history(desde, ahora);
+
+    // Si no hay snapshots en la ventana, retornar snapshot vacío
+    if (snapshots.empty()) {
+        pulso::core::Snapshot vacio;
+        vacio.timestamp = ahora;
+        for (const auto& nombre : {
+            "cpu.usage", "cpu.cores",
+            "memory.total", "memory.used", "memory.available",
+            "disk.total", "disk.used", "disk.free",
+            "network.rx_bytes", "network.tx_bytes"}) {
+            pulso::core::Metrica m;
+            m.name      = nombre;
+            m.value     = 0.0;
+            m.unit      = "";
+            m.timestamp = ahora;
+            vacio.metrics.push_back(m);
+        }
+        return vacio;
+    }
+
+    // Acumular valores por nombre de métrica
+    std::map<std::string, double> acumulado;
+    std::map<std::string, std::string> unidades;
+
+    for (const auto& snap : snapshots) {
+        for (const auto& m : snap.metrics) {
+            acumulado[m.name] += m.value;
+            unidades[m.name]   = m.unit;
+        }
+    }
+
+    // Calcular promedio
+    pulso::core::Snapshot promedio;
+    promedio.timestamp = ahora;
+
+    for (auto& [nombre, total] : acumulado) {
+        pulso::core::Metrica m;
+        m.name      = nombre;
+        m.value     = total / static_cast<double>(snapshots.size());
+        m.unit      = unidades[nombre];
+        m.timestamp = ahora;
+        promedio.metrics.push_back(m);
+    }
+
+    return promedio;
+}
+
 } // namespace pulso::storage
- 
