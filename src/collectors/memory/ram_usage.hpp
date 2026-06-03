@@ -1,6 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
+#include <vector>
+
+#include "../icollector.hpp"
+#include "core/types.hpp"
 
 namespace pulso::collectors::memory {
 
@@ -22,6 +27,16 @@ struct RamInfo {
  * @brief Obtiene las metricas actuales de uso de memoria RAM del sistema.
  * @return RamInfo con los valores de memoria total, usada y disponible.
  */
-double getRAMUsage();
+RamInfo getRamUsage();
+
+/**
+ * @brief Collector de métricas de memoria RAM.
+ */
+class CollectorMemory : public pulso::collectors::ICollector {
+public:
+    std::string nombre() const override;
+
+    std::vector<pulso::core::Metrica> recolectar() override;
+};
 
 } // namespace pulso::collectors::memory

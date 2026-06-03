@@ -1,8 +1,10 @@
-#include "ram_usage.h"
+#include "ram_usage.hpp"
+
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <chrono>
 
 namespace pulso::collectors::memory {
 
@@ -53,6 +55,30 @@ RamInfo getRamUsage() {
         static_cast<uint64_t>(memTotal),
         static_cast<uint64_t>(memUsed),
         static_cast<uint64_t>(memAvailable)
+    };
+}
+
+std::string CollectorMemory::nombre() const {
+    return "memory";
+}
+
+std::vector<pulso::core::Metrica> CollectorMemory::recolectar() {
+
+    RamInfo ram = getRamUsage();
+
+    auto timestamp = static_cast<std::int64_t>(
+        std::chrono::system_clock::to_time_t(
+            std::chrono::system_clock::now()
+        )
+    );
+
+    return {
+        {
+            "memory.used",
+            static_cast<double>(ram.used),
+            "bytes",
+            timestamp
+        }
     };
 }
 
