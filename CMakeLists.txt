@@ -5,7 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-option(PULSO_BUILD_TESTS "Build tests" ON)
+# Criterio de aceptación: Desactivado (OFF) por defecto para compilaciones limpias
+option(BUILD_TESTS "Build tests" OFF)
+option(PULSO_BUILD_TESTS "Build tests (Legacy)" OFF)
+
+# Si el usuario activa cualquiera de las dos opciones, sincronizamos el estado
+if(BUILD_TESTS OR PULSO_BUILD_TESTS)
+    set(BUILD_TESTS ON CACHE BOOL "Build tests" FORCE)
+    set(PULSO_BUILD_TESTS ON CACHE BOOL "Build tests (Legacy)" FORCE)
+endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -17,12 +25,11 @@ add_subdirectory(src)
 # Los siguientes subdirectorios están vacíos o pendientes de implementación.
 # Se comentan para evitar advertencias de CMake sobre directorios sin archivos fuente.
 # Descomentar cuando se agreguen archivos fuente en cada directorio.
-
 # add_subdirectory(src/collectors/disk)
 # add_subdirectory(src/collectors/network)
 # add_subdirectory(src/alertas)
 # add_subdirectory(src/config)
 
-if(PULSO_BUILD_TESTS)
+if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()

@@ -1,13 +1,13 @@
 name: CI
-
 on:
   pull_request:
     branches: [dev, main]
-
 jobs:
   validar-pr:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
       - name: Verificar descripción del PR
         run: |
           if [ -z "${{ github.event.pull_request.body }}" ]; then
@@ -15,7 +15,6 @@ jobs:
             exit 1
           fi
           echo "✅ PR tiene descripción"
-
       - name: Verificar que referencia un issue
         run: |
           if ! echo "${{ github.event.pull_request.body }}" | grep -qi "closes #\|fixes #\|refs #"; then
@@ -23,3 +22,18 @@ jobs:
             exit 1
           fi
           echo "✅ PR referencia un issue"
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libgtest-dev libsqlite3-dev
+      - name: Configurar CMake con tests
+        run: cmake -S . -B build -DBUILD_TESTS=ON
+      - name: Compilar
+        run: cmake --build build
+      - name: Ejecutar tests con ctest
+        run: cd build && ctest --output-on-failure
