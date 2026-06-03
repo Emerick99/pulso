@@ -14,6 +14,7 @@ namespace pulso::storage {
  * @throws SQLite::Exception si la ejecución del SQL falla por un error
  *         interno de la base de datos.
  */
+// Refactorizacion de la conexion por parametro
 void inicializarEsquema(SQLite::Database& db) {
 
     db.exec(
