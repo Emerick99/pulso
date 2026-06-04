@@ -17,6 +17,52 @@ esperada de muestreo.
 | Procesos       | Número total de procesos activos en el sistema.                              | Cantidad (#)             | Cada 2 segundos        |
 | Carga del sistema | Promedio de carga del sistema en intervalos de 1, 5 y 15 minutos.        | Valor numérico (load avg)| Cada 5 segundos        |
 
+---
+
+### Detalles para cada métrica
+
+#### CPU
+- **Unidad exacta**: Porcentaje (%)
+- **Rango normal**: 5% - 70% en servidor estándar
+- **Valor anormalmente alto (> 85%)**: Indica sobrecarga, procesos pesados o posible degradación del rendimiento
+- **Valor anormalmente bajo (< 2%)**: Sistema inactivo, sin carga de trabajo significativa
+- **Campo JSON**: `cpu_percent`
+
+#### RAM
+- **Unidad exacta**: Megabytes (MB) / Porcentaje (%)
+- **Rango normal**: 20% - 75% de la memoria total
+- **Valor anormalmente alto (> 90%)**: Escasez de memoria, riesgo de lentitud o uso de memoria virtual
+- **Valor anormalmente bajo (< 10%)**: Recursos libres suficientes, baja ocupación
+- **Campo JSON**: `ram_used_mb`, `ram_used_percent`
+
+#### Disco
+- **Unidad exacta**: Gigabytes (GB) / Porcentaje (%)
+- **Rango normal**: 30% - 75% de capacidad utilizada
+- **Valor anormalmente alto (> 90%)**: Espacio agotándose, riesgo de fallos al escribir datos
+- **Valor anormalmente bajo (< 10%)**: Amplio espacio libre disponible
+- **Campo JSON**: `disk_used_gb`, `disk_used_percent`
+
+#### Red
+- **Unidad exacta**: Bytes por segundo (B/s)
+- **Rango normal**: Variable según enlace; habitual < 10 MB/s en tráfico estándar
+- **Valor anormalmente alto**: Gran volumen de datos, posible saturación de red
+- **Valor anormalmente bajo**: Tráfico mínimo o problemas de conectividad
+- **Campo JSON**: `net_rx_bps`, `net_tx_bps`
+
+#### Procesos
+- **Unidad exacta**: Cantidad (#)
+- **Rango normal**: 50 - 300 procesos activos en servidor típico
+- **Valor anormalmente alto (> 500)**: Posible descontrol o fugas de procesos
+- **Valor anormalmente bajo (< 20)**: Funcionamiento muy básico o con fallos
+- **Campo JSON**: `process_count`
+
+#### Carga del sistema
+- **Unidad exacta**: Valor numérico (Load Average)
+- **Rango normal**: Valor ≤ cantidad de núcleos del procesador
+- **Valor anormalmente alto**: Valor superior a núcleos → sistema saturado
+- **Valor anormalmente bajo**: Carga mínima, recursos libres
+- **Campo JSON**: `load_avg_1min`, `load_avg_5min`, `load_avg_15min`
+-
 ## Notas adicionales
 
 - Las frecuencias de muestreo pueden ajustarse dependiendo del entorno (desarrollo, producción, dispositivos con recursos limitados, etc.).
