@@ -11,6 +11,13 @@ std::string CollectorNetworkLinux::nombre() const {
     return "network";
 }
 
+/**
+ * Lee /proc/net/dev y suma los contadores de todas las interfaces
+ * excepto la interfaz loopback ("lo").
+ *
+ * Retorna métricas acumuladas de recepción y transmisión expresadas
+ * en bytes.
+ */
 std::vector<pulso::core::Metrica> CollectorNetworkLinux::recolectar() {
     // /proc/net/dev tiene dos líneas de cabecera antes de los datos:
     //
