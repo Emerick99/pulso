@@ -5,6 +5,61 @@ el **Forking Workflow**. Lee este documento antes de empezar.
 
 ---
 
+## Configuración del entorno de desarrollo
+
+Antes de empezar a trabajar en el código, instala los hooks de pre-commit.
+Esto garantiza que tu código esté correctamente formateado antes de cada commit.
+
+### Requisitos
+
+- Python 3.x
+- `clang-format` instalado y disponible en el PATH
+
+```bash
+# En Ubuntu / Debian
+sudo apt-get install clang-format
+
+# En macOS
+brew install clang-format
+```
+
+### Instalar pre-commit
+
+```bash
+# Instalar la herramienta
+pip install pre-commit
+
+# Registrar los hooks en tu copia local del repositorio
+# Ejecutar UNA SOLA VEZ después de clonar
+pre-commit install
+```
+
+A partir de ese momento, cada `git commit` ejecutará automáticamente:
+
+| Hook | Qué hace |
+|---|---|
+| `trailing-whitespace` | Elimina espacios en blanco al final de línea |
+| `end-of-file-fixer` | Garantiza que cada archivo termine con un salto de línea |
+| `check-yaml` | Valida la sintaxis de los archivos YAML |
+| `no-commit-to-branch` | Bloquea commits directos en `main` |
+| `clang-format` | Formatea el código C++ según `.clang-format` del proyecto |
+
+> [!NOTE] Si `clang-format` modifica archivos en un commit, el commit será
+> rechazado. Revisar los cambios con `git diff`, hacer `git add` de los archivos
+> ya formateados y volver a hacer el commit.
+
+### Ejecutar manualmente
+
+```bash
+# Verificar todos los archivos del repositorio
+pre-commit run --all-files
+
+# Verificar solo los archivos modificados
+pre-commit run
+```
+
+---
+
 ## Flujo de trabajo
 
 ### 1. Haz fork del repositorio
