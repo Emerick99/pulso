@@ -173,13 +173,43 @@ project/
 └── Makefile
 ```
  
+---
+
+## ✨ Características
+
+### 📊 Métricas monitoreadas
+- CPU
+- RAM
+- Disco
+- Red
+- Procesos activos
+- Carga del sistema
+- Uptime
+
+### 📤 Formatos de salida
+- JSON
+- Prometheus
+- CSV
+- Texto
+
+### 🌐 Endpoints HTTP
+- Consulta en tiempo real
+- Exportación de datos
+
+### ⚠️ Sistema de alertas
+- Configuración por umbrales
+- Notificación de valores fuera de rango
+
+### ⚙️ Modo de uso
+- Modo `--once`: ejecución única para scripting
+
 ### Recompilación incremental
  
 El Makefile compila únicamente los archivos `.cpp` que hayan cambiado desde
 la última build, gracias al seguimiento de dependencias de Make sobre los
 archivos objeto (`.o`) en `build/`.
-
 ---
+
 
 ## Documentación
 Ver la carpeta [docs/](docs/)
@@ -189,3 +219,4 @@ Ver [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Licencia
 MIT — ver [LICENSE](LICENSE)
+
