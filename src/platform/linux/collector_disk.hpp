@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <stdexcept>
 #include "../../collectors/icollector.hpp"
-#include "../../collectors/error_recoleccion.hpp"
 #include "../../core/types.hpp"
 
 namespace pulso::platform::linux_platform {
@@ -10,18 +10,30 @@ namespace pulso::platform::linux_platform {
 /**
  * @brief Collector que mide el espacio de disco en el sistema de archivos raíz.
  *
- * Usa la llamada al sistema statvfs sobre el punto de montaje "/".
- * Devuelve las métricas disk.total, disk.used y disk.free en bytes.
+ * Usa la llamada al sistema statvfs(3) sobre el punto de montaje "/".
+ * Devuelve las métricas disk.total_bytes, disk.used_bytes y disk.free_bytes,
+ * todas expresadas en bytes.
+ *
+ * El cálculo de espacio usado se obtiene como:
+ *   disk.used_bytes = disk.total_bytes - disk.free_bytes
+ *
+ * donde disk.free_bytes usa f_bavail (bloques disponibles para usuarios no
+ * privilegiados), de modo que la suma used + free puede ser menor o igual
+ * que total (la diferencia corresponde a bloques reservados para root).
+ *
+ * @note Esta clase lanza std::runtime_error si statvfs falla, a diferencia
+ *       de CollectorDisk que usa ErrorRecoleccion. Esto permite integrarla
+ *       con capas que capturen std::exception de forma genérica.
  */
-class CollectorDisk : public pulso::collectors::ICollector {
+class CollectorDiskLinux : public pulso::collectors::ICollector {
 public:
     /// @brief Retorna el nombre identificador de este collector.
     /// @return "disk"
     std::string nombre() const override;
 
-    /// @brief Recolecta las métricas de disco del sistema.
-    /// @return Vector con disk.total, disk.used y disk.free en bytes.
-    /// @throws pulso::collectors::ErrorRecoleccion si statvfs falla.
+    /// @brief Recolecta las métricas de espacio de disco del sistema.
+    /// @return Vector con disk.total_bytes, disk.used_bytes y disk.free_bytes.
+    /// @throws std::runtime_error si statvfs("/", ...) falla.
     std::vector<pulso::core::Metrica> recolectar() override;
 };
 
