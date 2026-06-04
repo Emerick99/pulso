@@ -35,5 +35,17 @@ jobs:
         run: cmake -S . -B build -DBUILD_TESTS=ON
       - name: Compilar
         run: cmake --build build
+      - name: Install clang-tidy
+        run: |
+          sudo apt update
+          sudo apt install -y clang-tidy-14
+          sudo ln -s /usr/bin/clang-tidy-14 /usr/bin/clang-tidy
+      - name: Run clang-tidy
+        run: |
+          find src/ -name "*.cpp" -o -name "*.cxx" -o -name "*.cc" | \
+          xargs clang-tidy --config-file=.clang-tidy -- -std=c++17 || true
+      - name: Run clang-tidy on main.cpp specifically
+        run: |
+          clang-tidy src/main.cpp --config-file=.clang-tidy -- -std=c++17 || true
       - name: Ejecutar tests con ctest
         run: cd build && ctest --output-on-failure
