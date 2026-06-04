@@ -1,76 +1,76 @@
 #include "collector_memory.hpp"
-#include "../../collectors/error_recoleccion.hpp"
 
 #include <fstream>
-#include <sstream>
 #include <string>
+#include <ctime>
 
-namespace pulso::collectors {
+namespace pulso::platform::linux_platform {
 
-std::string CollectorMemory::nombre() const {
+std::string CollectorMemoryLinux::nombre() const {
     return "memory";
 }
 
-std::vector<pulso::core::Metrica> CollectorMemory::recolectar() {
-    std::ifstream file("/proc/meminfo");
+std::vector<pulso::core::Metrica> CollectorMemoryLinux::recolectar() {
+    // /proc/meminfo tiene el formato:
+    //   FieldName:   <valor> kB
+    // Se leen línea por línea buscando MemTotal y MemAvailable.
+    // Ambos campos están presentes en cualquier kernel Linux >= 3.14.
 
+    std::ifstream file("/proc/meminfo");
     if (!file.is_open()) {
-        throw ErrorRecoleccion("No se pudo abrir /proc/meminfo");
+        throw pulso::collectors::ErrorRecoleccion(
+            "No se pudo abrir /proc/meminfo"
+        );
     }
 
-    long long memTotalKB = -1;
+    long long memTotalKB     = -1;
     long long memAvailableKB = -1;
-    long long memFreeKB = -1;
 
     std::string key;
-    long long value;
+    long long   value;
     std::string unit;
 
+    // Parseo directo: cada línea tiene la forma "Clave:   valor kB"
     while (file >> key >> value >> unit) {
         if (key == "MemTotal:") {
             memTotalKB = value;
         } else if (key == "MemAvailable:") {
             memAvailableKB = value;
-        } else if (key == "MemFree:") {
-            memFreeKB = value;
+        }
+
+        // Salida temprana: ya tenemos los dos campos que necesitamos
+        if (memTotalKB >= 0 && memAvailableKB >= 0) {
+            break;
         }
     }
 
-    if (memTotalKB < 0 || memAvailableKB < 0 || memFreeKB < 0) {
-        throw ErrorRecoleccion(
-            "No se encontraron las claves requeridas en /proc/meminfo"
+    if (memTotalKB < 0) {
+        throw pulso::collectors::ErrorRecoleccion(
+            "No se encontró el campo MemTotal en /proc/meminfo"
+        );
+    }
+    if (memAvailableKB < 0) {
+        throw pulso::collectors::ErrorRecoleccion(
+            "No se encontró el campo MemAvailable en /proc/meminfo"
         );
     }
 
-    const double memTotalBytes =
-        static_cast<double>(memTotalKB) * 1024.0;
+    // Convertir de kB a bytes
+    const double totalBytes     = static_cast<double>(memTotalKB)     * 1024.0;
+    const double availableBytes = static_cast<double>(memAvailableKB) * 1024.0;
 
-    const double memAvailableBytes =
-        static_cast<double>(memAvailableKB) * 1024.0;
+    // used = MemTotal - MemAvailable
+    // Invariante garantizada por el kernel: MemAvailable <= MemTotal,
+    // por lo tanto used_bytes >= 0 y used_bytes <= total_bytes siempre.
+    const double usedBytes = totalBytes - availableBytes;
 
-    const double memUsedBytes =
-        static_cast<double>(memTotalKB - memAvailableKB) * 1024.0;
+    const std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
 
     return {
-        pulso::core::Metrica{
-            "memory.total",
-            memTotalBytes,
-            "bytes",
-            0
-        },
-        pulso::core::Metrica{
-            "memory.used",
-            memUsedBytes,
-            "bytes",
-            0
-        },
-        pulso::core::Metrica{
-            "memory.available",
-            memAvailableBytes,
-            "bytes",
-            0
-        }
+        {"memory.total_bytes",     totalBytes,     "bytes", ahora},
+        {"memory.used_bytes",      usedBytes,      "bytes", ahora},
+        {"memory.available_bytes", availableBytes, "bytes", ahora},
     };
 }
 
-} // namespace pulso::collectors
+} // namespace pulso::platform::linux_platform
