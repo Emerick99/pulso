@@ -29,6 +29,8 @@ add_subdirectory(src)
 # add_subdirectory(src/collectors/network)
 # add_subdirectory(src/alertas)
 # add_subdirectory(src/config)
+# add_subdirectory(src/collectors/temperatura)   # pendiente: sin archivos fuente aún
+# add_subdirectory(src/collectors/uptime)        # pendiente: sin archivos fuente aún
 
 if(BUILD_TESTS)
     add_subdirectory(tests)
