@@ -8,23 +8,27 @@
 namespace pulso::platform::linux_platform {
 
 /**
- * @brief Collector que mide el tráfico de red acumulado desde /proc/net/dev.
+ * @brief Implementación Linux del collector de métricas de red.
  *
- * Lee el pseudo-archivo /proc/net/dev del kernel de Linux, que expone
- * estadísticas de red por interfaz. Suma rx_bytes y tx_bytes de todas
- * las interfaces activas, excluyendo el loopback ("lo") que no representa
- * tráfico real de red.
+ * Este collector cumple el contrato definido para CollectorNetwork
+ * leyendo estadísticas desde /proc/net/dev.
  *
- * Formato relevante de /proc/net/dev (columnas por interfaz):
- *   face | rx_bytes rx_packets ... | tx_bytes tx_packets ...
+ * Para cada interfaz distinta de "lo" (loopback), acumula:
+ * - bytes recibidos (rx_bytes)
+ * - bytes transmitidos (tx_bytes)
  *
- * Las métricas devueltas son:
- *   - network.rx_bytes : total de bytes recibidos (todas las ifaces salvo lo)
- *   - network.tx_bytes : total de bytes transmitidos (todas las ifaces salvo lo)
+ * Las métricas devueltas representan contadores acumulados desde
+ * el arranque del sistema.
  *
- * @note Los valores son contadores acumulados desde el arranque del sistema,
- *       no tasas. El consumidor es responsable de calcular deltas si necesita
- *       ancho de banda en tiempo real.
+ * Métricas:
+ * - network.rx_bytes
+ * - network.tx_bytes
+ *
+ * Unidad:
+ * - bytes
+ *
+ * @throws ErrorRecoleccion si /proc/net/dev no puede leerse
+ *         o tiene un formato inválido.
  */
 class CollectorNetworkLinux : public pulso::collectors::ICollector {
 public:
