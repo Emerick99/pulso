@@ -2,6 +2,22 @@
 
 Plataforma en C++ para gestionar y monitorear información clave de forma eficiente.
 
+## Inicio Rápido
+
+```bash
+sudo apt install git cmake g++
+git clone https://github.com/sis-inf/pulso.git && cd pulso
+cmake -S . -B build && cmake --build build
+./build/pulso --once
+```
+
+Salida esperada:
+
+```text
+Estado del sistema: OK
+```
+
+
 ## ¿Qué es?
 
 Pulso es una aplicación desarrollada en C++ que permite gestionar y visualizar información relevante de manera centralizada. Está pensada para ofrecer alto rendimiento y control directo sobre los recursos del sistema.
