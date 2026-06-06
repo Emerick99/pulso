@@ -7,7 +7,11 @@ src/
 │   │   └── cpu_usage.h
 │   ├── memory/
 │   ├── disk/
-│   └── network/
+│   ├── network/
+│   ├── alertas/
+│   ├── temperatura/
+│   ├── uptime/
+│   └── loadavg/
 ├── core/
 ├── config/
 ├── alertas/
@@ -18,7 +22,6 @@ src/
 │   └── logging/
 ├── main.cpp
 └── CMakeLists.txt
-
 ---
 
 ## 📂 Descripción de Directorios y Archivos Fuente
@@ -32,6 +35,10 @@ Módulos dedicados a la recolección de métricas del sistema. Las subcarpetas r
   * ram_usage.cpp: Archivo fuente destinado al cálculo del uso de la memoria RAM.
 * disk/: Directorio base para métricas de almacenamiento.
 * network/: Directorio base para métricas de red.
+* alertas/: Directorio para la recolección y gestión de alertas relacionadas con métricas del sistema.
+* temperatura/: Directorio para la recolección de métricas de temperatura del sistema.
+* uptime/: Directorio para la recolección del tiempo de actividad (uptime) del sistema.
+* loadavg/: Directorio para la recolección de métricas de carga promedio del sistema.
 
 ### 🧠 core/
 Directorio base destinado a albergar el núcleo del sistema y el flujo principal de ejecución del monitor.
