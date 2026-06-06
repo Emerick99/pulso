@@ -2,6 +2,10 @@
 #include "utils/logging/logger.hpp"
 
 #include <string>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
 
 namespace pulso::http {
 
@@ -16,6 +20,12 @@ void HandleMetrics(
     auto& logger = pulso::utils::logging::Logger::instancia();
 
     auto metrics = system_monitor.getMetrics();
+
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%SZ");
+    metrics["timestamp"] = ss.str();
 
     int status_code = 0;
 
