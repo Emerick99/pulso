@@ -48,6 +48,8 @@ A partir de ese momento, cada `git commit` ejecutará automáticamente:
 > rechazado. Revisar los cambios con `git diff`, hacer `git add` de los archivos
 > ya formateados y volver a hacer el commit.
 
+
+
 ### Ejecutar manualmente
 
 ```bash
@@ -57,6 +59,20 @@ pre-commit run --all-files
 # Verificar solo los archivos modificados
 pre-commit run
 ```
+
+### Verificaciones antes de hacer commit
+
+Antes de crear un commit, asegúrate de:
+
+```bash
+# Formatear el archivo modificado
+clang-format -i src/archivo_modificado.cpp
+
+# Ejecutar las pruebas
+ctest --output-on-failure
+```
+
+Estas verificaciones ayudan a garantizar que el código cumpla con el formato del proyecto y que las pruebas continúen pasando correctamente.
 
 ---
 
