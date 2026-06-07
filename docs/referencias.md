@@ -7,3 +7,11 @@
 | 5. | The Linux Kernel Documentation | The Linux Kernel Organization | Kernel Linux | https://docs.kernel.org/filesystems/proc.html |
 | 6. | Windows System Information API | Microsoft Corporation | 2024 | https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/ | 
 | 7. | The C++ Programming Language (4ta edicion)| Bjarne Stroustrup | 2013 | Editorial: Addison-Wesley Profe ssional |
+| 8. | man 5 proc | Linux man-pages project | Actual | https://man7.org/linux/man-pages/man5/proc.5.html |
+| 9. | man 3 statvfs | Linux man-pages project | Actual | https://man7.org/linux/man-pages/man3/statvfs.3.html |
+| 10. | man 7 hostname | Linux man-pages project | Actual | https://man7.org/linux/man-pages/man7/hostname.7.html |
+| 11. | Linux Kernel Documentation - proc filesystem | The Linux Kernel Organization | Kernel Linux | https://docs.kernel.org/filesystems/proc.html |
+| 12. | Linux Kernel Documentation Index | The Linux Kernel Organization | Kernel Linux | https://docs.kernel.org/ |
+| 13. | Documentation/filesystems/proc.txt | The Linux Kernel Organization | Kernel Linux | https://www.kernel.org/doc/Documentation/filesystems/proc.txt |
+| 14. | The Linux Programming Interface | Michael Kerrisk | 2010 | https://man7.org/tlpi/ |
+| 15. | Google Test Documentation | Google | Actual | https://google.github.io/googletest/ |
