@@ -44,3 +44,18 @@ md
 | RS-004 | Resolución mínima de pantalla: **1280x720** para visualización correcta del dashboard web. |
 | RS-005 | El sistema debe tener acceso a puertos estándar de red (ej. 5432 para PostgreSQL, 80/443 para HTTP/HTTPS). |
 | RS-006 | El instalador completo no debe exceder los **100 MB** de almacenamiento. |
+
+---
+
+## Requerimientos adicionales de rendimiento
+
+Los siguientes requisitos definen los límites de operación del sistema:
+
+| ID       | Categoría     | Descripción                                                                 | Prioridad |
+|----------|---------------|-----------------------------------------------------------------------------|-----------|
+| **RNF-012** | Rendimiento   | Procesar **mínimo 100 métricas por segundo** sin pérdida de datos.          | Alta      |
+| **RNF-013** | Rendimiento   | Respuesta del endpoint `/metrics` en **menos de 200 ms** bajo carga normal. | Alta      |
+| **RNF-014** | Rendimiento   | Consumo de CPU **máximo 70%** en estado estable.                           | Alta      |
+| **RNF-015** | Rendimiento   | Consumo de RAM **máximo 200 MB** en operación normal.                      | Media     |
+| **RNF-016** | Disponibilidad| Disponibilidad del servicio **99.9% mensual**.                             | Alta      |
+| **RNF-017** | Escalabilidad | Soportar aumento de carga **hasta el doble** sin modificaciones mayores.    | Baja      |
