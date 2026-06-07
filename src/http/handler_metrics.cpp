@@ -2,49 +2,56 @@
 #include "utils/logging/logger.hpp"
 
 #include <string>
+#include <chrono>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
 
 namespace pulso::http {
 
-void registrarMetrics(
-    httplib::Server&                       servidor,
-    const pulso::storage::Storage&         storage,
-    const pulso::formatters::IFormatter&   formatter)
+void HandleMetrics(
+  httplib::Server& servidor,
+  SystemMonitor&   system_monitor)
 {
-    servidor.Get("/metrics", [&storage, &formatter](
-        const httplib::Request&  req,
-        httplib::Response&       res)
-    {
-        auto& logger = pulso::utils::logging::Logger::instancia();
+  servidor.Get("/metrics", [&system_monitor](
+    const httplib::Request& req,
+    httplib::Response&      res)
+  {
+    auto& logger = pulso::utils::logging::Logger::instancia();
 
-        // Obtener el snapshot más reciente
-        auto snapshot = storage.last();
+    auto metrics = system_monitor.getMetrics();
 
-        int statusCode = 0;
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%SZ");
+    metrics["timestamp"] = ss.str();
 
-        if (snapshot.has_value()) {
-            // Hay datos: responder con 200 y el body del formatter
-            std::string body        = formatter.formatear(snapshot.value());
-            std::string contentType = formatter.contentType();
+    int status_code = 0;
 
-            res.set_content(body, contentType);
-            res.status = 200;
-            statusCode = 200;
-        } else {
-            // No hay datos: responder con 503
-            res.set_content(
-                R"({ "error": "sin datos disponibles" })",
-                "application/json"
-            );
-            res.status = 503;
-            statusCode = 503;
-        }
+    if (!metrics.empty()) {
+      pulso::formatters::FormatterJSON formatter;
 
-        // Registrar la request en el log con nivel INFO
-        logger.info(
-            req.method + " " + req.path +
-            " -> " + std::to_string(statusCode)
-        );
-    });
+      std::string body         = formatter.formatear(metrics);
+      std::string content_type = formatter.contentType();
+
+      res.set_content(body, content_type);
+      res.status = 200;
+      status_code = 200;
+    } else {
+      res.set_content(
+        R"({ "error": "no data available" })",
+        "application/json"
+      );
+      res.status = 503;
+      status_code = 503;
+    }
+
+    logger.info(
+      req.method + " " + req.path +
+      " -> " + std::to_string(status_code)
+    );
+  });
 }
 
 } // namespace pulso::http
