@@ -49,7 +49,7 @@ public:
     std::size_t cantidadAlertas() const;
 
 private:
-    std::vector<<AlertaUmbral> alertas_;
+    std::vector<AlertaUmbral> alertas_;
     std::function<void(const std::string&)> callback_;
 };
 
