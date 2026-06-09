@@ -93,3 +93,65 @@ Pulso requiere un compilador compatible con el estándar **C++17**. Las opciones
 - **Linux** — GCC 11 o superior
 - **macOS** — Clang 13 o superior (incluido con las herramientas de Xcode)
 - **Windows** — MSVC 2019 o superior (incluido con Visual Studio)
+
+---
+
+## Preguntas frecuentes sobre C++ y CMake
+
+### ¿Por qué usar CMake y no un Makefile directo?
+CMake funciona en Windows, Linux y macOS, genera archivos de compilación automáticamente y evita escribir reglas complejas manualmente.
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(pulso LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_executable(pulso main.cpp)
+```
+¿Cómo agrego un nuevo archivo .cpp al proyecto?
+Edita el archivo CMakeLists.txt:
+```cmake
+add_executable(pulso
+    main.cpp
+    monitoreo.cpp
+    nuevo_archivo.cpp
+)
+```
+Comando para aplicar:
+```bash
+cmake -B build && cmake --build build
+```
+¿Qué es la carpeta build/ y puedo borrarla?
+Guarda archivos temporales. Sí se puede borrar sin riesgo:
+```bash
+rm -rf build          # Linux / macOS
+rd /s /q build        # Windows
+```
+para recrearla 
+```bash
+cmake -B build
+```
+¿Por qué falla clang-format con mi archivo?
+Se arregla automáticamente con:
+```bash
+clang-format -i archivo.cpp
+```
+¿Cómo ejecuto solo una prueba de Google Test?
+```bash
+cd build && ctest -R "NombreDeLaPrueba" -V
+# O directamente:
+./build/tests/pulso-tests --gtest_filter=NombreClase.NombrePrueba
+```
+¿Qué es una fuga de memoria y cómo revisarla?
+Ocurre si reservas memoria y no la liberas:
+```bash
+valgrind --leak-check=full ./build/bin/pulso
+```
+¿Cómo limpiar y recompilar todo desde cero?
+```bash
+rm -rf build && mkdir build && cd build && cmake .. && cmake --build .
+```
+¿Cómo agregar advertencias al compilador?
+En CMakeLists.txt:
+```cmake
+target_compile_options(pulso PRIVATE -Wall -Wextra -pedantic -O2)
