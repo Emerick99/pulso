@@ -20,7 +20,6 @@ target_sources(pulso PRIVATE
     storage/schema.cpp
     storage/storage.cpp
     utils/console_formatter.cpp
-    utils/disk_usage.cpp
     utils/logging/logger.cpp
     utils/signal_handler.cpp
 )
