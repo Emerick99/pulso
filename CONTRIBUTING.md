@@ -214,6 +214,33 @@ git push origin tipo/descripcion-corta
 - ✅ Todo PR necesita al menos una revisión
 
 ---
+## Verificación antes del PR
+
+Antes de abrir un Pull Request, verifica que el proyecto compile correctamente y que todas las pruebas pasen.
+
+### Compilar con soporte para Google Test
+
+```bash
+cmake -S . -B build -DBUILD_TESTS=ON
+cmake --build build
+```
+
+### Ejecutar todos los tests
+
+```bash
+cd build && ctest --output-on-failure
+```
+
+El parámetro `--output-on-failure` muestra información detallada cuando una prueba falla.
+
+### Ejecutar un test específico
+
+```bash
+ctest -R nombre_del_test
+```
+
+Reemplaza `nombre_del_test` por el nombre del test que deseas ejecutar.
+
 
 ## Ramas del proyecto
 
