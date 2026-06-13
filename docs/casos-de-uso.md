@@ -48,3 +48,48 @@ Este documento define los actores y las funcionalidades principales del agente d
   1. El agente consulta la memoria RAM al sistema operativo.
   2. Obtiene la memoria total, en uso y disponible.
   3. Almacena temporalmente los valores para mostrarlos al administrador.
+
+---
+
+### CU-Alert-01: Configuración de alerta por uso elevado de CPU
+- **Actor:** Administrador de Sistemas
+- **Descripción:** Permite definir un umbral de uso de CPU para generar notificaciones automáticas cuando se supere el límite establecido.
+- **Flujo Principal:**
+  1. El administrador abre el archivo de configuración `config.toml`.
+  2. Localiza la sección `[alertas.cpu]`.
+  3. Establece el valor `max = 90` (90% de uso máximo).
+  4. Configura el intervalo de revisión: `intervalo_revision = 60` segundos.
+  5. Guarda el archivo de configuración.
+  6. Reinicia el servicio para aplicar los cambios:
+     ```bash
+     sudo systemctl restart pulso
+     ```
+- **Postcondición:** El sistema generará una alerta cuando el uso de CPU supere el 90% durante 3 mediciones consecutivas.
+
+---
+
+### CU-Export-01: Exportación de historial de métricas a CSV
+- **Actor:** Administrador de Sistemas
+- **Descripción:** Permite extraer el historial de métricas almacenado y guardarlo en formato CSV para su análisis en herramientas externas.
+- **Flujo Principal:**
+  1. El administrador abre la terminal en el directorio raíz del proyecto.
+  2. Ejecuta el comando de exportación:
+     ```bash
+     ./build/bin/pulso --export csv --output metricas.csv --last-hours 24
+     ```
+  3. El sistema procesa los datos y genera el archivo de salida con el historial completo.
+- **Postcondición:** Se crea el archivo `metricas.csv` con los valores de CPU, memoria, disco y red de las últimas 24 horas.
+
+---
+
+### CU-Once-01: Recolección puntual de métricas
+- **Actor:** Administrador de Sistemas
+- **Descripción:** Ejecuta una sola captura de métricas del sistema sin dejar el servicio ejecutándose en segundo plano.
+- **Flujo Principal:**
+  1. El administrador abre la terminal en el directorio raíz del proyecto.
+  2. Ejecuta el modo de captura única:
+     ```bash
+     ./build/bin/pulso --once
+     ```
+  3. El agente obtiene los valores actuales de todos los recursos y los muestra en pantalla.
+- **Postcondición:** Se muestran las métricas del momento y el proceso finaliza automáticamente.
