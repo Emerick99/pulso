@@ -25,9 +25,11 @@ struct RamInfo {
 
 /**
  * @brief Obtiene las metricas actuales de uso de memoria RAM del sistema.
+ * @param path Ruta al archivo de información de memoria (por defecto "/proc/meminfo").
+ *             Permite inyectar una ruta alternativa en tests sin modificar el código de producción.
  * @return RamInfo con los valores de memoria total, usada y disponible.
  */
-RamInfo getRamUsage();
+RamInfo getRamUsage(const std::string& path = "/proc/meminfo");
 
 /**
  * @brief Collector de métricas de memoria RAM.

@@ -8,12 +8,12 @@
 
 namespace pulso::collectors::memory {
 
-RamInfo getRamUsage() {
-    std::ifstream file("/proc/meminfo");
+RamInfo getRamUsage(const std::string& path) {
+    std::ifstream file(path);
 
     if (!file.is_open()) {
         throw std::runtime_error(
-            "No se pudo abrir el archivo /proc/meminfo: "
+            "No se pudo abrir el archivo " + path + ": "
             "verifique permisos y disponibilidad del sistema"
         );
     }
@@ -40,7 +40,7 @@ RamInfo getRamUsage() {
 
     if (memTotal == 0 || memAvailable == 0) {
         throw std::runtime_error(
-            "No se encontraron las claves MemTotal o MemAvailable en /proc/meminfo"
+            "No se encontraron las claves MemTotal o MemAvailable en " + path
         );
     }
 
