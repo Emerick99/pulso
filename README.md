@@ -1,5 +1,7 @@
 # Pulso
 
+[![CI](https://github.com/sis-inf/pulso/actions/workflows/ci.yml/badge.svg)](https://github.com/sis-inf/pulso/actions/workflows/ci.yml)
+
 Plataforma en C++ para gestionar y monitorear información clave de forma eficiente.
 
 ## Inicio Rápido
@@ -86,6 +88,49 @@ En Windows:
 ```bash
 pulso.exe
 ```
+## Compilación rápida
+
+```bash
+cmake -S . -B build
+make -C build
+./build/pulso
+```
+
+Para una guía completa de instalación consulte:
+
+[docs/instalacion.md](docs/instalacion.md)
+
+---
+
+## Ejemplo de salida
+
+Ejecutar:
+
+```bash
+./build/pulso --once --format json
+```
+
+Salida:
+
+```json
+{
+  "status": "OK",
+  "cpu": {
+    "usage_percent": 23
+  },
+  "memory": {
+    "usage_percent": 40
+  },
+  "disk": {
+    "usage_percent": 47
+  },
+  "network": {
+    "status": "connected"
+  }
+}
+```
+
+---
 
 ---
 ## Ejemplo basico de uso esperado
@@ -228,7 +273,12 @@ archivos objeto (`.o`) en `build/`.
 
 
 ## Documentación
+
 Ver la carpeta [docs/](docs/)
+
+Guía completa de instalación:
+
+[docs/instalacion.md](docs/instalacion.md)
 
 ## Contribuir
 Ver [CONTRIBUTING.md](CONTRIBUTING.md)
