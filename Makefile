@@ -8,7 +8,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -Wpedantic -O2
 
 SRC_DIR  = src
 TEST_DIR = tests
-BUILD_DIR = build
+BUILD_DIR = build_local
 
 # Recopilar fuentes automáticamente
 SRCS     = $(wildcard $(SRC_DIR)/*.cpp)
@@ -23,8 +23,8 @@ TEST_TARGET = $(BUILD_DIR)/run_tests
 # ------------------------------------------------------------------------------
 # Target por defecto
 # ------------------------------------------------------------------------------
-.PHONY: all
-all: $(TARGET)
+.PHONY: all build test clean format run help
+all: build
 
 $(TARGET): $(OBJS) | $(BUILD_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^
@@ -37,14 +37,8 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
 # Tests
 # ------------------------------------------------------------------------------
 .PHONY: test
-test: $(TEST_TARGET)
-	./$(TEST_TARGET)
-
-$(TEST_TARGET): $(TEST_OBJS) $(filter-out $(BUILD_DIR)/main.o, $(OBJS)) | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^
-
-$(BUILD_DIR)/test_%.o: $(TEST_DIR)/%.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+test:
+	cd build && ctest --output-on-failure
 
 # ------------------------------------------------------------------------------
 # Directorio de build
@@ -57,4 +51,38 @@ $(BUILD_DIR):
 # ------------------------------------------------------------------------------
 .PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build/ $(BUILD_DIR)
+
+# ------------------------------------------------------------------------------
+# Build con CMake
+# ------------------------------------------------------------------------------
+.PHONY: build
+build:
+	cmake -S . -B build && cmake --build build
+
+# ------------------------------------------------------------------------------
+# Formateo de código
+# ------------------------------------------------------------------------------
+.PHONY: format
+format:
+	find src -type f \( -name "*.cpp" -o -name "*.hpp" -o -name "*.h" \) -exec clang-format -i {} +
+
+# ------------------------------------------------------------------------------
+# Ejecutar el binario
+# ------------------------------------------------------------------------------
+.PHONY: run
+run:
+	./build/bin/pulso --once
+
+# ------------------------------------------------------------------------------
+# Ayuda
+# ------------------------------------------------------------------------------
+.PHONY: help
+help:
+	@echo "Targets disponibles:"
+	@echo "  build   - Compila el proyecto con CMake"
+	@echo "  test    - Ejecuta los tests con ctest"
+	@echo "  clean   - Elimina el directorio build/"
+	@echo "  format  - Aplica clang-format a todo src/"
+	@echo "  run     - Ejecuta ./build/bin/pulso --once"
+	@echo "  help    - Muestra esta ayuda"

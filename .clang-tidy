@@ -1,0 +1,19 @@
+---
+Checks: '
+bugprone-*,
+cppcoreguidelines-*,
+modernize-*,
+performance-*,
+readability-*,
+-*readability-magic-numbers,
+-*cppcoreguidelines-avoid-magic-numbers,
+-*readability-identifier-length,
+'
+
+CheckOptions:
+  - key: readability-identifier-length.MinVariableNameLength
+    value: '2'
+  - key: readability-identifier-length.MinParameterNameLength
+    value: '2'
+  - key: modernize-use-auto.MinTypeNameLength
+    value: '5'

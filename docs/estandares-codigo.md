@@ -191,3 +191,89 @@ Tras revisar la inconsistencia entre la conclusión previa y los ejemplos técni
 - .cc / .h → archivos
 - Consistencia > preferencias personales
 - Código → Inglés
+
+---
+
+## Ejemplos de código correcto e incorrecto
+
+### 1. Manejo de errores
+❌ **Incorrecto**: usar códigos numéricos para indicar errores
+```cpp
+int dividir(int a, int b) {
+    if (b == 0) return -1;
+    return a / b;
+}
+```
+✅ **Correcto**: usar excepciones
+```cpp
+#include <stdexcept>
+
+int dividir(int a, int b) {
+    if (b == 0) {
+        throw std::invalid_argument("No se puede dividir entre cero");
+    }
+    return a / b;
+}
+```
+###2. Nomenclatura
+ 
+❌ Incorrecto: formato inconsistente
+```cpp
+class calculadora {
+public:
+    int suma(int n1, int n2);
+    int total;
+};
+```
+✅ Correcto: PascalCase para clases, snake_case para variables/funciones
+```cpp
+class Calculadora {
+public:
+    int sumar_valores(int primer_numero, int segundo_numero);
+    int resultado_total_;
+};
+```
+###3. Manejo de memoria
+ 
+❌ Incorrecto: punteros crudos sin gestión
+```cpp
+int* crear_lista(int tamano) {
+    int* datos = new int[tamano];
+    return datos;
+}
+```
+✅ Correcto: usar contenedores o punteros inteligentes
+```cpp
+#include <vector>
+#include <memory>
+
+std::vector<int> crear_lista(int tamano) {
+    return std::vector<int>(tamano);
+}
+
+// Otra opción:
+std::unique_ptr<int[]> crear_lista(int tamano) {
+    return std::make_unique<int[]>(tamano);
+}
+```
+###4. Documentación
+ 
+❌ Incorrecto: comentarios poco útiles
+```cpp
+// Suma dos números
+int sumar(int a, int b) {
+    return a + b;
+}
+```
+✅ Correcto: comentarios estilo Doxygen
+```cpp
+/**
+ * @brief Suma dos números enteros
+ * @param primer_valor Primer operando de la suma
+ * @param segundo_valor Segundo operando de la suma
+ * @return Resultado de la operación
+ */
+int sumar(int primer_valor, int segundo_valor) {
+    return primer_valor + segundo_valor;
+}
+```

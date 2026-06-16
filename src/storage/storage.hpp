@@ -58,6 +58,24 @@ public:
      * @return Cantidad total de snapshots.
      */
     std::size_t total() const;
+
+    /**
+     * @brief Exporta todos los snapshots a un archivo CSV.
+     * @param ruta_archivo Ruta del archivo CSV de salida.
+     */
+    void exportToCSV(const std::string& ruta_archivo) const;
+
+    /**
+     * @brief Calcula el promedio de las métricas en una ventana de tiempo.
+     *
+     * Promedia todos los snapshots cuyo timestamp esté dentro de los últimos
+     * ventana_segundos. Si no hay snapshots en la ventana, retorna un snapshot
+     * con todos los campos en 0.
+     *
+     * @param ventana_segundos Tamaño de la ventana en segundos.
+     * @return Snapshot con los valores promediados.
+     */
+    pulso::core::Snapshot getPromedio(uint32_t ventana_segundos) const;
  
 private:
     SQLite::Database db_;

@@ -1,17 +1,19 @@
-#include "ram_usage.h"
+#include "ram_usage.hpp"
+
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <chrono>
 
 namespace pulso::collectors::memory {
 
-RamInfo getRamUsage() {
-    std::ifstream file("/proc/meminfo");
+RamInfo getRamUsage(const std::string& path) {
+    std::ifstream file(path);
 
     if (!file.is_open()) {
         throw std::runtime_error(
-            "No se pudo abrir el archivo /proc/meminfo: "
+            "No se pudo abrir el archivo " + path + ": "
             "verifique permisos y disponibilidad del sistema"
         );
     }
@@ -38,7 +40,7 @@ RamInfo getRamUsage() {
 
     if (memTotal == 0 || memAvailable == 0) {
         throw std::runtime_error(
-            "No se encontraron las claves MemTotal o MemAvailable en /proc/meminfo"
+            "No se encontraron las claves MemTotal o MemAvailable en " + path
         );
     }
 
@@ -53,6 +55,30 @@ RamInfo getRamUsage() {
         static_cast<uint64_t>(memTotal),
         static_cast<uint64_t>(memUsed),
         static_cast<uint64_t>(memAvailable)
+    };
+}
+
+std::string CollectorMemory::nombre() const {
+    return "memory";
+}
+
+std::vector<pulso::core::Metrica> CollectorMemory::recolectar() {
+
+    RamInfo ram = getRamUsage();
+
+    auto timestamp = static_cast<std::int64_t>(
+        std::chrono::system_clock::to_time_t(
+            std::chrono::system_clock::now()
+        )
+    );
+
+    return {
+        {
+            "memory.used",
+            static_cast<double>(ram.used),
+            "bytes",
+            timestamp
+        }
     };
 }
 

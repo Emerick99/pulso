@@ -14,22 +14,15 @@ namespace pulso::storage {
  * @throws SQLite::Exception si la ejecución del SQL falla por un error
  *         interno de la base de datos.
  */
+// Refactorizacion de la conexion por parametro
 void inicializarEsquema(SQLite::Database& db) {
 
     db.exec(
         "CREATE TABLE IF NOT EXISTS snapshots ("
-        "    id                 INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "    timestamp          INTEGER NOT NULL,"
-        "    cpu_usage          REAL,"
-        "    cpu_cores          INTEGER,"
-        "    memory_total       INTEGER,"
-        "    memory_used        INTEGER,"
-        "    memory_available   INTEGER,"
-        "    disk_total         INTEGER,"
-        "    disk_used          INTEGER,"
-        "    disk_free          INTEGER,"
-        "    network_rx_bytes   INTEGER,"
-        "    network_tx_bytes   INTEGER"
+        "    timestamp INTEGER NOT NULL,"
+        "    nombre    TEXT    NOT NULL,"
+        "    valor     REAL    NOT NULL,"
+        "    unidad    TEXT    NOT NULL"
         ");"
     );
 

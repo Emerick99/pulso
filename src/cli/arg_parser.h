@@ -1,27 +1,45 @@
 #pragma once
 
-#include "../config.hpp"
+#include "../config/config.hpp"
+#include <string>
+
+namespace pulso::cli {
 
 /**
- * @brief Procesa argumentos de línea de comandos.
+ * @brief Opciones extendidas de linea de comandos.
  *
- * Permite sobrescribir valores dentro de MonitorConfig.
+ * Incluye la configuracion de monitor mas flags nuevos
+ * para el modo 'once' y formato de salida.
+ */
+struct CliOptions {
+    pulso::config::MonitorConfig monitor;
+    bool once = false;
+    std::string format = "json";
+};
+
+/**
+ * @brief Procesa argumentos de linea de comandos.
  *
  * Argumentos soportados:
  * - --interval <ms>
  * - --metrics <lista>
- * - -h | --help
+ * - --once
+ * - --format json|csv|prometheus
+ * - -h, --help
+ * - --version
  *
  * @param argc Cantidad de argumentos.
  * @param argv Vector de argumentos.
- * @param config Configuración a modificar.
+ * @param options Configuracion extendida a modificar.
  *
- * @return true si la ejecución puede continuar.
- * @return false si ocurrió un error o se mostró ayuda.
+ * @return true si la ejecucion puede continuar.
+ * @return false si ocurrio un error o se mostro ayuda.
  */
-bool parse_arguments(int argc, char* argv[], MonitorConfig& config);
+bool parse_arguments(int argc, char* argv[], CliOptions& options);
 
 /**
  * @brief Muestra la ayuda del programa.
  */
 void print_help();
+
+} // namespace pulso::cli

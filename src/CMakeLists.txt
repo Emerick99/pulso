@@ -11,13 +11,15 @@ target_sources(pulso PRIVATE
     core/SystemMonitor.cpp
     formatters/formatter_json.cpp
     formatters/formatter_prometheus.cpp
+    http/handler_health.cpp
     http/handler_history.cpp
+    collectors/loadavg/loadavg_collector.cpp
+    collectors/procesos/proc_collector.cpp
     platform/linux/collector_cpu.cpp
     sampler/sampler.cpp
     storage/schema.cpp
     storage/storage.cpp
     utils/console_formatter.cpp
-    utils/disk_usage.cpp
     utils/logging/logger.cpp
     utils/signal_handler.cpp
 )

@@ -26,3 +26,27 @@ Se sugiere que la estructura contenga:
 ## Nota
 
 Esta es solo una propuesta en documentación. No se está implementando código fuente aún.
+
+# Configuración general del monitoreo
+[general]
+intervalo_recoleccion = 5    # Intervalo entre lecturas en segundos
+nivel_registro = "info"     # Nivel de detalle: debug, info, advertencia, error
+
+# Configuración de alertas
+[alertas]
+habilitado = true            # Activar/desactivar sistema de alertas
+intervalo_revision = 60      # Revisar condiciones cada 60 segundos
+
+# Umbrales para CPU
+[alertas.cpu]
+max = 90                     # Alerta si el uso supera el 90%
+lecturas_consecutivas = 3    # Activar después de 3 mediciones seguidas
+
+# Umbrales para memoria RAM
+[alertas.ram]
+max = 85                     # Alerta si el uso supera el 85%
+
+# Umbrales para disco
+[alertas.disco]
+max = 90                     # Alerta si el uso supera el 90%
+ruta = "/"                    # Ruta del disco a monitorear

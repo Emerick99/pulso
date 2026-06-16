@@ -1,0 +1,32 @@
+repos:
+  # ── Hooks estándar de pre-commit ──────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Elimina espacios en blanco al final de cada línea
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+      # Garantiza que cada archivo termine con exactamente un salto de línea
+      - id: end-of-file-fixer
+
+      # Valida la sintaxis de todos los archivos YAML del repositorio
+      - id: check-yaml
+
+      # Impide hacer commit directamente en la rama main
+      - id: no-commit-to-branch
+        args: [--branch, main]
+
+  # ── Formateo de C++ con clang-format ─────────────────────────────────────
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: clang-format
+        language: system
+        # Aplica el formato definido en .clang-format (BasedOnStyle: LLVM,
+        # IndentWidth: 2) directamente sobre los archivos modificados.
+        # -i edita en sitio; el estilo se toma automáticamente del
+        # .clang-format en la raíz del repositorio.
+        entry: clang-format -i
+        types_or: [c++, c]
+        files: \.(cpp|hpp|cc|cxx|h)$

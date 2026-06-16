@@ -42,3 +42,26 @@ target_link_libraries(test_storage PRIVATE
     dl
 )
 gtest_discover_tests(test_storage)
+add_executable(test_disk_usage
+    automatizados/test_disk_usage.cpp
+)
+target_include_directories(test_disk_usage PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_disk_usage PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_disk_usage)
+add_executable(test_formatter_prometheus
+    formatters/test_formatter_prometheus.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_prometheus.cpp
+)
+target_include_directories(test_formatter_prometheus PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_formatter_prometheus PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_formatter_prometheus)

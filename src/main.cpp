@@ -1,47 +1,253 @@
 #include <iostream>
-#include <exception>
+#include <memory>
+#include <thread>
+#include <chrono>
+#include <atomic>
+#include <vector>
+#include <ctime>
 
-#include <SQLiteCpp/Database.h>
+// httplib
+#include <httplib.h>
 
+// Config
+#include "config/config.hpp"
+
+// Logger
+#include "utils/logging/logger.hpp"
+
+// Storage
 #include "storage/schema.hpp"
-#include "collectors/memory/ram_usage.h"
+#include "storage/storage.hpp"
 
-int main() {
-    try {
-        // Abrir o crear base SQLite
-        SQLite::Database db(
-            "pulso.db",
-            SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE
-        );
+// Collectors
+#include "collectors/memory/ram_usage.hpp"
+#include "platform/linux/collector_cpu.hpp"
+// TODO: CollectorDisk y CollectorNetwork no implementan ICollector aún.
+//       Pendiente en issue separado.
 
-        // Inicializar esquema
-        pulso::storage::inicializarEsquema(db);
+// Sampler
+#include "sampler/sampler.hpp"
 
-        // Obtener métricas RAM
-        auto ramInfo = pulso::collectors::memory::getRamUsage();
+// Formatters (OFICIALES del proyecto)
+#include "formatters/formatter_json.hpp"
+#include "formatters/formatter_csv.hpp"
+#include "formatters/formatter_prometheus.hpp"
 
-        // Mostrar resultados
-        std::cout << "Pulso iniciado correctamente" << std::endl;
+// HTTP handlers
+#include "http/handler_health.hpp"
+#include "http/handler_history.hpp"
+#include "http/handler_metrics.hpp"
+#include "http/handler_prometheus.hpp"
 
-        std::cout << "RAM total: "
-                  << ramInfo.total
-                  << " bytes" << std::endl;
+// CLI
+#include "cli/arg_parser.h"
 
-        std::cout << "RAM usada: "
-                  << ramInfo.used
-                  << " bytes" << std::endl;
+// Core types
+#include "core/types.hpp"
 
-        std::cout << "RAM disponible: "
-                  << ramInfo.available
-                  << " bytes" << std::endl;
+// Signal handler
+extern std::atomic<bool> isRunning;
+void setupSignalHandler();
 
-        return 0;
+// ============================================
+// NUEVO: Funcion helper para modo once
+// ============================================
+
+/**
+ * @brief Ejecuta una sola coleccion de metricas y las imprime a stdout.
+ *
+ * Usa los formatters OFICIALES del proyecto (JSON, CSV, Prometheus).
+ */
+static int run_once_mode(
+    const std::vector<std::shared_ptr<pulso::collectors::ICollector>>& collectors,
+    const std::string& format)
+{
+    using pulso::utils::logging::Logger;
+    auto& log = Logger::instancia();
+
+    log.info("Modo once: ejecutando coleccion unica...");
+
+    // 1. COLECCIONAR: ejecutar cada collector una sola vez
+    std::vector<std::vector<pulso::core::Metrica>> all_metrics;
+    for (const auto& collector : collectors)
+    {
+        auto metrics = collector->recolectar();
+        all_metrics.push_back(std::move(metrics));
     }
-    catch (const std::exception& e) {
-        std::cerr << "Error: "
-                  << e.what()
-                  << std::endl;
 
+    // 2. CONSTRUIR SNAPSHOT
+    pulso::core::Snapshot snapshot;
+    snapshot.timestamp = std::time(nullptr);
+    for (const auto& metrics : all_metrics)
+    {
+        for (const auto& m : metrics)
+        {
+            snapshot.metricas.push_back(m);
+        }
+    }
+
+    // 3. FORMATEAR con los formatters OFICIALES
+    std::unique_ptr<pulso::formatters::IFormatter> formatter;
+
+    if (format == "json")
+    {
+        formatter = std::make_unique<pulso::formatters::FormatterJSON>();
+    }
+    else if (format == "csv")
+    {
+        formatter = std::make_unique<pulso::formatters::FormatterCSV>();
+    }
+    else if (format == "prometheus")
+    {
+        formatter = std::make_unique<pulso::formatters::FormatterPrometheus>();
+    }
+
+    std::string output = formatter->formatear(snapshot);
+
+    // 4. IMPRIMIR a stdout
+    std::cout << output;
+    if (!output.empty() && output.back() != '\n')
+    {
+        std::cout << "\n";
+    }
+
+    log.info("Modo once: completado. Saliendo con codigo 0.");
+    return 0;
+}
+
+// ============================================
+// MAIN
+// ============================================
+
+int main(int argc, char* argv[]) {
+    // -------------------------------------------------------------------------
+    // 1. Parsear argumentos CLI
+    // -------------------------------------------------------------------------
+    pulso::cli::CliOptions cli_opts;
+    if (!pulso::cli::parse_arguments(argc, argv, cli_opts)) {
         return 1;
     }
+
+    // --config se maneja aqui (manteniendo logica original)
+    std::string config_path = "pulso.toml";
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--config" && i + 1 < argc) {
+            config_path = argv[++i];
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Cargar configuracion
+    // -------------------------------------------------------------------------
+    pulso::config::Config cfg;
+    try {
+        cfg = pulso::config::cargar(config_path);
+    } catch (const pulso::config::ErrorConfig& e) {
+        std::cerr << "[pulso] Error al cargar configuracion: " << e.what() << "\n";
+        return 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. Configurar logger
+    // -------------------------------------------------------------------------
+    using pulso::utils::logging::LogLevel;
+    using pulso::utils::logging::Logger;
+
+    auto& log = Logger::instancia();
+    if      (cfg.nivel_log == "debug") log.setMinLevel(LogLevel::DEBUG);
+    else if (cfg.nivel_log == "warn")  log.setMinLevel(LogLevel::WARN);
+    else if (cfg.nivel_log == "error") log.setMinLevel(LogLevel::ERROR);
+    else                               log.setMinLevel(LogLevel::INFO);
+
+    log.info("pulso v0.1.0 iniciando");
+
+    // -------------------------------------------------------------------------
+    // 4. Collectors (comun para modo once Y modo daemon)
+    // -------------------------------------------------------------------------
+    std::vector<std::shared_ptr<pulso::collectors::ICollector>> collectors;
+    collectors.push_back(std::make_shared<pulso::collectors::CollectorCPU>());
+    collectors.push_back(
+        std::make_shared<pulso::collectors::memory::CollectorMemory>()
+    );
+    // TODO: agregar CollectorDisk y CollectorNetwork cuando implementen ICollector.
+
+    // =========================================================================
+    // MODO ONCE
+    // =========================================================================
+    if (cli_opts.once)
+    {
+        return run_once_mode(collectors, cli_opts.format);
+    }
+
+    // =========================================================================
+    // MODO DAEMON (comportamiento original - sin cambios)
+    // =========================================================================
+
+    log.info("Puerto: "        + std::to_string(cfg.servidor.puerto));
+    log.info("Base de datos: " + cfg.storage.ruta_db);
+
+    // Abrir base de datos e inicializar esquema
+    pulso::storage::Storage storage(cfg.storage.ruta_db);
+    pulso::storage::inicializarEsquema(storage);
+
+    // Sampler (bucle infinito de coleccion)
+    pulso::sampler::Sampler sampler(
+        collectors,
+        storage,
+        cfg.sampler.intervalo_segundos
+    );
+    sampler.iniciar();
+
+    // Signal handler
+    setupSignalHandler();
+
+    // Servidor HTTP + handlers
+    httplib::Server server;
+    pulso::formatters::FormatterJSON formatterJson;
+
+    auto start_time = std::chrono::steady_clock::now();
+
+    // GET /health
+    server.Get("/health", [&start_time](
+        const httplib::Request&,
+        httplib::Response& res)
+    {
+        res.set_content(
+            pulso::http::handleHealth(start_time),
+            "application/json"
+        );
+    });
+
+    // GET /metrics — pendiente hasta que SystemMonitor se adapte al flujo
+    // actual (Storage + ICollector). Ver issue #270.
+    // pulso::http::HandleMetrics(server, system_monitor);
+
+    // GET /history
+    pulso::http::registrarHistory(server, storage, formatterJson);
+
+    // GET /metrics/prometheus
+    pulso::http::registrarPrometheus(server, storage);
+
+    // Arrancar servidor HTTP en thread separado
+    std::thread http_thread([&]() {
+        log.info("Servidor HTTP escuchando en " +
+                 cfg.servidor.host + ":" +
+                 std::to_string(cfg.servidor.puerto));
+        server.listen(cfg.servidor.host.c_str(), cfg.servidor.puerto);
+    });
+
+    // Esperar senal de shutdown (bucle infinito)
+    while (isRunning.load()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    // Shutdown limpio
+    log.info("Senal recibida — iniciando shutdown...");
+    server.stop();
+    if (http_thread.joinable()) http_thread.join();
+    sampler.detener();
+    log.info("pulso detenido correctamente.");
+
+    return 0;
 }
