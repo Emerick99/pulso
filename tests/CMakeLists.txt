@@ -65,3 +65,16 @@ target_link_libraries(test_formatter_prometheus PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_formatter_prometheus)
+
+add_executable(test_ram_usage
+    automatizados/test_ram_usage.cpp
+    ${PROJECT_SOURCE_DIR}/src/collectors/memory/ram_usage.cpp
+)
+target_include_directories(test_ram_usage PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_ram_usage PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_ram_usage)
