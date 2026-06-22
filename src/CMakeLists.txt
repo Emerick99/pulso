@@ -7,6 +7,9 @@ target_sources(pulso PRIVATE
     collectors/memory/ram_usage.cpp
     collectors/network/network_io.cpp
     collectors/network/net_usage.cpp
+    collectors/loadavg/loadavg_collector.cpp
+    collectors/procesos/proc_collector.cpp
+    collectors/temperatura/temp_collector.cpp
     config/config.cpp
     core/SystemMonitor.cpp
     formatters/formatter_json.cpp
@@ -14,8 +17,6 @@ target_sources(pulso PRIVATE
     http/handler_health.cpp
     http/handler_history.cpp
     http/handler_metrics.cpp
-    collectors/loadavg/loadavg_collector.cpp
-    collectors/procesos/proc_collector.cpp
     platform/linux/collector_cpu.cpp
     sampler/sampler.cpp
     storage/schema.cpp
